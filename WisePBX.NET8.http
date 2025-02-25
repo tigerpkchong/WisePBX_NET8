@@ -1,0 +1,6 @@
+@WisePBX.NET8_HostAddress = http://localhost:5194
+
+GET {{WisePBX.NET8_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
