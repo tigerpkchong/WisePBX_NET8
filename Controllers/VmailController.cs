@@ -7,7 +7,7 @@ using WisePBX.NET8.Models.Wise;
 
 namespace WisePBX.NET8.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class VmailController : _MediaController
     {
@@ -44,7 +44,7 @@ namespace WisePBX.NET8.Controllers
         public IActionResult GetList([FromBody] JsonObject p)
         {
             if (p == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
-            if (p.dnis == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
+            if (p["dnis"] == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
 
             string dnis = (p["dnis"] ?? "").ToString();
             int agentId = Convert.ToInt32((p["agentId"] ?? "-1").ToString());
