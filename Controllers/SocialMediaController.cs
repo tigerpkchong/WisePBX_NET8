@@ -6,6 +6,7 @@ using System;
 using System.Globalization;
 using System.Text.Json.Nodes;
 using WisePBX.NET8.Models.SConnector;
+using WisePBX.NET8.Models.SConnector_SP;
 using WisePBX.NET8.Models.Wise;
 
 namespace WisePBX.NET8.Controllers
@@ -192,7 +193,7 @@ namespace WisePBX.NET8.Controllers
             int number = Convert.ToInt32((p["number"]??"0").ToString());
 
             var baseUri = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
-            SConnectorEntities _sconnDB = new SConnectorEntities();
+            SConnectorSPEntities _sconnDB = new SConnectorSPEntities();
             var _r = _sconnDB.get_fb_comment(ticketId, aboveMsgId, afterMsgId).ToList();
             _r = _r.Select(x =>
             {

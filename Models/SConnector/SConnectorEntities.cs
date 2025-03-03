@@ -15,13 +15,6 @@ public partial class SConnectorEntities : DbContext
         : base(options)
     {
     }
-    public virtual DbSet<get_fb_comment_Result> get_fb_comment_Results { get; set; }
-    public IEnumerable<get_fb_comment_Result> get_fb_comment(long ticket_id, string? above_msg_id = null, string? after_msg_id = null)
-    {
-        return this.get_fb_comment_Results
-            .FromSqlInterpolated($"[dbo].[get_fb_comment] {ticket_id},{above_msg_id},{after_msg_id}")
-            .ToArray();
-    }
     public virtual DbSet<SCRM_CannedFile> SCRM_CannedFiles { get; set; }
 
     public virtual DbSet<SCRM_CannedMsg> SCRM_CannedMsgs { get; set; }
@@ -40,11 +33,6 @@ public partial class SConnectorEntities : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<get_fb_comment_Result>(entity =>
-        {
-            entity.HasNoKey();
-        });
-
         modelBuilder.Entity<SCRM_CannedFile>(entity =>
         {
             entity.HasKey(e => e.FileId);

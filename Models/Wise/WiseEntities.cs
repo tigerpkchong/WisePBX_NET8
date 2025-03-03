@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using WisePBX.NET8.Models.Wise_SP;
 
 namespace WisePBX.NET8.Models.Wise;
 
