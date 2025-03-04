@@ -27,7 +27,6 @@ namespace WisePBX.NET8.Controllers
         private string hostDrive;
         private string hostName;
         private string hostAddress;
-        //private string webUrl;
         private string fileUploadPath;
         private IWebHostEnvironment environment;
 
@@ -38,11 +37,9 @@ namespace WisePBX.NET8.Controllers
             hostDrive = configuration.GetValue<string>("hostDrive") ?? "";
             hostName = configuration.GetValue<string>("HostName") ?? "";
             hostAddress = configuration.GetValue<string>("HostAddress") ?? "";
-            //webUrl = configuration.GetValue<string>("WebUrl") ?? "";
             fileUploadPath = configuration.GetValue<string>("FileUploadPath") ?? "";
             if (fileUploadPath == "")
                 fileUploadPath = environment.ContentRootPath + "/Uploads";
-            
         }
 
         [HttpPost]
@@ -238,26 +235,25 @@ namespace WisePBX.NET8.Controllers
                 int agentId = Convert.ToInt32((p["agentId"]??"0").ToString());
                 string content = (p["content"] ?? "").ToString();
                 string link = (p["link"] ?? "").ToString();
+                string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
 
                 if (content == "" || agentId == 0)
                     return Ok(new { result = "fail", details = "Invalid Parameters." });
 
-                var baseUri = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
                 if (link != "")
                 {
-                    if (link.StartsWith($@"{baseUri}/Uploads/") == false)
+                    if (link.StartsWith($@"{webUrl}/Uploads/") == false)
                         return Ok(new { result = "fail", details = "Invalid Link Parameters." });
 
                 }
-                
-                
+
                 string _tmpFolder = DateTime.Today.ToString("yyyyMMdd");
                 //string _fillFolder = Path.Combine(environment.WebRootPath ?? environment.ContentRootPath, "Uploads", _tmpFolder);
                 string _fillFolder = Path.Combine(fileUploadPath, _tmpFolder);
                 Directory.CreateDirectory(_fillFolder);
                 string fileName = "Email_" + agentId + "_" + Guid.NewGuid().ToString("N") + ".txt";
                 string filePath = Path.Combine(_fillFolder, fileName);
-                string fileLink = $@"{baseUri}/Uploads/{_tmpFolder}/{fileName}";
+                string fileLink = $@"{webUrl}/Uploads/{_tmpFolder}/{fileName}";
 
                 System.IO.File.WriteAllText(filePath, content, Encoding.Unicode);
                 return Ok(new { result = "success", data = new { filePath, fileLink} });

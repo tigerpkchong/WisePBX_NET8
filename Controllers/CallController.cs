@@ -16,7 +16,6 @@ namespace WisePBX.NET8.Controllers
         private string hostDrive;
         private string hostName;
         private string hostAddress;
-        private string webUrl;
 
         public CallController(IConfiguration iConfig)
         {
@@ -24,7 +23,6 @@ namespace WisePBX.NET8.Controllers
             hostDrive = configuration.GetValue<string>("hostDrive") ?? "";
             hostName = configuration.GetValue<string>("HostName") ?? "";
             hostAddress = configuration.GetValue<string>("HostAddress") ?? "";
-            webUrl = configuration.GetValue<string>("WebUrl") ?? "";
         }
 
         [HttpPost]
@@ -33,7 +31,8 @@ namespace WisePBX.NET8.Controllers
             //int? id = (p["id"] == null) ? 0 : Convert.ToInt32(p["id"]?.GetValue<string>());
             int id = Convert.ToInt32((p["id"]??"0").ToString());
             if (id == 0) return Ok(new { result = "fail", details = "Invalid Parameters." });
-            
+            string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
+
             WiseEntities _wisedb = new WiseEntities();
             var data = (from c in _wisedb.Calls
                         join v in _wisedb.Voicelogs on c.CallID equals v.CallID
@@ -79,6 +78,7 @@ namespace WisePBX.NET8.Controllers
             string ani = (p["ani"] ?? "").ToString();
             int read = Convert.ToInt32((p["read"] ?? "-1").ToString());
 
+            string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
             WiseEntities _wisedb = new WiseEntities();
             var data = (from m in _wisedb.MediaCalls
                         join v in _wisedb.Voicemails on m.PrevCallID equals v.CallID
@@ -130,6 +130,8 @@ namespace WisePBX.NET8.Controllers
                 string phoneNo = (p["phoneNo"]??"").ToString();
                 
                 if (phoneNo != "" && phoneNo.Length < 8) return Ok(new { result = "fail", details = "Invalid Parameters." });
+
+                string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
 
                 WiseEntities _wisedb = new WiseEntities();
                 //VoiceContentClass a;
@@ -234,8 +236,8 @@ namespace WisePBX.NET8.Controllers
                 //if (p.startDate == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
                 //if (p.endDate == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
 
-                DateTime startDate = (p["startDate"] == null) ? DateTime.Today.AddYears(-1) : Convert.ToDateTime(p["startDate"].GetValue<string>());
-                DateTime endDate = (p["endDate"] == null) ? DateTime.Today.AddDays(1) : (Convert.ToDateTime(p["endtDate"].GetValue<string>())).AddDays(1);
+                DateTime startDate = (p["startDate"] == null) ? DateTime.Today.AddYears(-1) : Convert.ToDateTime(p["startDate"].ToString());
+                DateTime endDate = (p["endDate"] == null) ? DateTime.Today.AddDays(1) : (Convert.ToDateTime(p["endDate"].ToString())).AddDays(1);
                 int serviceId = (p["serviceId"] == null) ? -1 : Convert.ToInt32((p["serviceId"]??"-1").ToString());
                 //string agentId = (p.agentId == null) ? "" : "|" + Convert.ToString(p.agentId.Value) + "|";
 
@@ -253,6 +255,8 @@ namespace WisePBX.NET8.Controllers
                     new int[] { (int)p["callId"].GetValue<int>() };
 
                 if (phoneNo != "" && phoneNo.Length < 8) return Ok(new { result = "fail", details = "Invalid Parameters." });
+
+                string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
 
                 WiseEntities _wisedb = new WiseEntities();
 
@@ -291,7 +295,7 @@ namespace WisePBX.NET8.Controllers
                 
                     
                 var data = r.Take(1000).ToList();
-                    
+                
                 data.ForEach(x => {
                     Array.ForEach(x.FilePaths.Split(','), ar => {
                         var _voiceFile = new 

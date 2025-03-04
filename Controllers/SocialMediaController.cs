@@ -19,7 +19,6 @@ namespace WisePBX.NET8.Controllers
         private string hostDrive;
         private string hostName;
         private string hostAddress;
-        //private string webUrl;
         private string fileUploadPath;
         private IWebHostEnvironment environment;
 
@@ -57,8 +56,8 @@ namespace WisePBX.NET8.Controllers
                 if (!Directory.Exists(_fillFolder)) Directory.CreateDirectory(_fillFolder);
                 _fillFolder = Path.Combine(_fillFolder, ticketId);
                 if (!Directory.Exists(_fillFolder)) Directory.CreateDirectory(_fillFolder);
+                string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
 
-                var baseUri = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
                 var data = new List<dynamic>();
                 foreach (var _file in form.Files)
                 {
@@ -73,7 +72,7 @@ namespace WisePBX.NET8.Controllers
                         ContentType = _file.ContentType,
                         FileName = _file.FileName,
                         FilePath = _filePath,
-                        FileUrl = baseUri + "/Uploads/" + _dateFolder + "/" + ticketId + "/" + _file.FileName
+                        FileUrl = webUrl + "/Uploads/" + _dateFolder + "/" + ticketId + "/" + _file.FileName
 
                     });
                 }

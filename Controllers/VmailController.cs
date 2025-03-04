@@ -15,14 +15,13 @@ namespace WisePBX.NET8.Controllers
         private string hostDrive;
         private string hostName;
         private string hostAddress;
-        private string webUrl;
         public VmailController(IConfiguration iConfig)
         {
             configuration = iConfig;
             hostDrive = configuration.GetValue<string>("hostDrive") ?? "";
             hostName = configuration.GetValue<string>("HostName") ?? "";
             hostAddress = configuration.GetValue<string>("HostAddress") ?? "";
-            webUrl = configuration.GetValue<string>("WebUrl") ?? "";
+            
         }
 
         [HttpPost]
@@ -138,6 +137,7 @@ namespace WisePBX.NET8.Controllers
         {
             int id = Convert.ToInt32((p["id"]??"-1").ToString());
             if (id <= 0) return Ok(new { result = "fail", details = "Invalid Parameters." });
+            string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
 
             WiseEntities _wisedb = new WiseEntities();
 

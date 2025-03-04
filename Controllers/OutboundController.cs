@@ -13,7 +13,6 @@ namespace WisePBX.NET8.Controllers
         private string hostDrive;
         private string hostName;
         private string hostAddress;
-        //private string webUrl;
         private string fileUploadPath;
         private IWebHostEnvironment environment;
         public OutboundController(IConfiguration iConfig,IWebHostEnvironment ienvironment)
@@ -85,12 +84,12 @@ namespace WisePBX.NET8.Controllers
             
             if (form.Files.Count == 0)
                 return Ok(new { result = "fail", details = "No File Upload." });
-            
+
+            string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
             string _tmpFolder = ((campaignId == 0) ? "C" + caseNo : "O" + campaignId) + "-" + agentId + "-" + DateTime.Now.Ticks; //+ Guid.NewGuid().ToString();
             string _fillFolder = Path.Combine(fileUploadPath, "Uploads", _tmpFolder);
             Directory.CreateDirectory(_fillFolder);
             var files = HttpContext.Request.Form.Files;
-            var baseUri = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
             var data = new List<dynamic>();
             foreach (var _file in files)
             {
@@ -105,7 +104,7 @@ namespace WisePBX.NET8.Controllers
                     FileName = _file.FileName,
                     FilePath = _filePath,
                     ContentType = _file.ContentType,
-                    FileUrl = baseUri + "/Uploads/" + _tmpFolder + "/" + _file.FileName
+                    FileUrl = webUrl + "/Uploads/" + _tmpFolder + "/" + _file.FileName
 
                 });
             }
