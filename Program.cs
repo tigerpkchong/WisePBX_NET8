@@ -13,7 +13,7 @@ builder.Services.AddControllers()
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline. test 2
+// Configure the HTTP request pipeline. test 3
 app.UseCors(configurePolicy: policy =>
 {
     policy.SetIsOriginAllowed(origin =>
