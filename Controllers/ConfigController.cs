@@ -12,6 +12,7 @@ namespace WisePBX.NET8.Controllers
     [ApiController]
     public class ConfigController : ControllerBase
     {
+        [HttpPost]
         public IActionResult GetServiceList([FromBody] JsonObject p)
         {
             try
@@ -28,23 +29,9 @@ namespace WisePBX.NET8.Controllers
                                 i.ServiceDesc
                             }).ToList();
                 return Ok(new { result = "success", data });
-                /*
-                var data = (from i in _wisedb.Service
-                            join r in _wisedb.Service_Report on i.ServiceID.ToString()  equals r.ServiceID
-                            where r.IsVaild=="Y"
-                            orderby i.ServiceID 
-                            select new
-                            {
-                                i.ServiceID,
-                                ServiceDesc=r.ServiceName
-
-                            }).ToList();
-                */
-
             }
             catch (Exception e)
             {
-                //Console.WriteLine(e.Message);
                 return Ok(new { result = "fail", data = e.Message });
             }
         }
@@ -75,7 +62,6 @@ namespace WisePBX.NET8.Controllers
             }
             catch (Exception e)
             {
-                //Console.WriteLine(e.Message);
                 return Ok(new { result = "fail", data = e.Message });
             }
         }
@@ -100,7 +86,6 @@ namespace WisePBX.NET8.Controllers
             }
             catch (Exception e)
             {
-                //Console.WriteLine(e.Message);
                 return Ok(new { result = "fail", data = e.Message });
             }
         }
@@ -130,7 +115,6 @@ namespace WisePBX.NET8.Controllers
             }
             catch (Exception e)
             {
-                //Console.WriteLine(e.Message);
                 return Ok(new { result = "fail", data = e.Message });
             }
         }
@@ -157,7 +141,6 @@ namespace WisePBX.NET8.Controllers
             }
             catch (Exception e)
             {
-                //Console.WriteLine(e.Message);
                 return Ok(new { result = "fail", data = e.Message });
             }
         }
@@ -223,7 +206,6 @@ namespace WisePBX.NET8.Controllers
             }
             catch (Exception e)
             {
-                //Console.WriteLine(e.Message);
                 return Ok(new { result = "fail", data = e.Message });
             }
         }
@@ -233,8 +215,7 @@ namespace WisePBX.NET8.Controllers
         {
             if (p == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
             int agentId = Convert.ToInt32((p["agentId"] ?? "-1").ToString());
-            //if (agentId == -1) return Ok(new { result = "fail", details = "Invalid Parameters." });
-
+            
             try
             {
                 WiseEntities _wisedb = new WiseEntities();
@@ -264,7 +245,6 @@ namespace WisePBX.NET8.Controllers
             }
             catch (Exception e)
             {
-                //Console.WriteLine(e.Message);
                 return Ok(new { result = "fail", data = e.Message });
             }
         }
@@ -325,7 +305,6 @@ namespace WisePBX.NET8.Controllers
             }
             catch (Exception e)
             {
-                //Console.WriteLine(e.Message);
                 return Ok(new { result = "fail", data = e.Message });
             }
         }
@@ -364,7 +343,6 @@ namespace WisePBX.NET8.Controllers
             }
             catch (Exception e)
             {
-                //Console.WriteLine(e.Message);
                 return Ok(new { result = "fail", data = e.Message });
             }
         }
@@ -399,7 +377,6 @@ namespace WisePBX.NET8.Controllers
             }
             catch (Exception e)
             {
-                //Console.WriteLine(e.Message);
                 return Ok(new { result = "fail", data = e.Message });
             }
         }
@@ -454,7 +431,6 @@ namespace WisePBX.NET8.Controllers
             }
             catch (Exception e)
             {
-                //Console.WriteLine(e.Message);
                 return Ok(new { result = "fail", data = e.Message });
             }
         }
@@ -473,7 +449,6 @@ namespace WisePBX.NET8.Controllers
             }
             catch (Exception e)
             {
-                //Console.WriteLine(e.Message);
                 return Ok(new { result = "fail", data = e.Message });
             }
         }
@@ -494,7 +469,6 @@ namespace WisePBX.NET8.Controllers
             }
             catch (Exception e)
             {
-                //Console.WriteLine(e.Message);
                 return Ok(new { result = "fail", data = e.Message });
             }
         }
