@@ -15,39 +15,39 @@ namespace WisePBX.NET8.Controllers
     [ApiController]
     public class SocialMediaController : ControllerBase
     {
+        private readonly IWebHostEnvironment environment;
         private readonly IConfiguration configuration;
-        private string hostDrive;
-        private string hostName;
-        private string hostAddress;
-        private string fileUploadPath;
-        private IWebHostEnvironment environment;
+        private readonly string hostAddress;
+        private readonly string fileUploadPath;
+        
 
         public SocialMediaController(IConfiguration iConfig, IWebHostEnvironment ienvironment)
         {
             environment = ienvironment;
             configuration = iConfig;
-            hostDrive = configuration.GetValue<string>("hostDrive") ?? "";
-            hostName = configuration.GetValue<string>("HostName") ?? "";
             hostAddress = configuration.GetValue<string>("HostAddress") ?? "";
-            //webUrl = configuration.GetValue<string>("WebUrl") ?? "";
             fileUploadPath = configuration.GetValue<string>("FileUploadPath") ?? "";
             if (fileUploadPath == "")
                 fileUploadPath = environment.ContentRootPath + "/Uploads";
         }
 
+        public partial record UploadForm
+        {
+            public required string ticketId { get; init; }
+            public required int agentId { get; init; }
+            public required List<IFormFile> files { get; init; }
+        }
         [HttpPost]
-        public async Task<IActionResult> UploadFile()
+        public async Task<IActionResult> UploadFile(UploadForm form)
         {
             try
             {
-                var form = HttpContext.Request.Form;
-
-                string ticketId = Convert.ToString(form["ticketId"]);
-                int agentId = Convert.ToInt32(form["agentId"]);
+                string ticketId = form.ticketId;
+                int agentId = form.agentId;
 
                 if (ticketId == string.Empty || agentId == 0)
                     return Ok(new { result = "fail", details = "Invalid Parameters." });
-                if (form.Files.Count == 0)
+                if (form.files.Count == 0)
                     return Ok(new { result = "fail", details = "No File Upload." });
 
                 string _fillFolder = Path.Combine(fileUploadPath, "Uploads");
@@ -59,7 +59,7 @@ namespace WisePBX.NET8.Controllers
                 string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
 
                 var data = new List<dynamic>();
-                foreach (var _file in form.Files)
+                foreach (var _file in form.files)
                 {
                     string _filePath = Path.Combine(_fillFolder, _file.FileName);
                     using (Stream fileStream = new FileStream(_filePath, FileMode.Create))
@@ -130,9 +130,8 @@ namespace WisePBX.NET8.Controllers
             var _r = (from m in _sconnDB.SC_Tickets
                       where m.enduser_id == userId && m.entry == entry && m.status_id == 2
                       && m.company_code == companyCode
-                      select m).ToList().Select(
-                      o => new { start_time = DateTime.Parse(o.start_time), last_time = DateTime.Parse(o.last_active_time) }).ToList();
-            //select SqlFunctions.DateDiff("second",Convert.ToDateTime(m.start_time),Convert.ToDateTime(m.last_active_time))).ToList();
+                      select m).AsEnumerable().Select(
+                      o => new { start_time = DateTime.Parse(o.start_time, CultureInfo.CurrentCulture), last_time = DateTime.Parse(o.last_active_time, CultureInfo.CurrentCulture) }).ToList();
             return Ok(new
             {
                 result = "success",
@@ -151,7 +150,7 @@ namespace WisePBX.NET8.Controllers
             var _r = (from m in _sconnDB.SCRM_CannedFiles
                       where m.CompanyName == companyName && m.Active == true
                       orderby m.FileName
-                      select m).ToList().Select(o =>
+                      select m).AsEnumerable().Select(o =>
                      new
                      {
                          FileName = o.FileName,
@@ -163,6 +162,7 @@ namespace WisePBX.NET8.Controllers
             return Ok(new { result = "success", data = _r });
         }
 
+        [HttpPost]
         public IActionResult GetCannedMsgs([FromBody] JsonObject p)
         {
             if (p == null) return Ok(new { result = "error", details = "Invalid Parameters." });
@@ -185,10 +185,7 @@ namespace WisePBX.NET8.Controllers
             long ticketId = Convert.ToInt64((p["ticketId"]??"0").ToString());
             if (ticketId == 0) return Ok(new { result = "error", details = "Invalid Parameters." });
             string aboveMsgId = Convert.ToString((p["aboveMsgId"]??"").ToString());
-            //if (aboveMsgId == 0) return Ok(new { result = "error", details = "Invalid Parameters." });
             string afterMsgId = Convert.ToString((p["afterMsgId"] ?? "").ToString());
-            //if (afterMsgId == 0) return Ok(new { result = "error", details = "Invalid Parameters." });
-            //int ascending = (p.ascending == null) ? 0 : Convert.ToInt32(p.ascending.Value);
             int number = Convert.ToInt32((p["number"]??"0").ToString());
 
             var baseUri = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
@@ -202,9 +199,9 @@ namespace WisePBX.NET8.Controllers
             }).ToList();
 
             if (number == 0)
-                return Ok(new { result = "success", total = _r.Count(), data = _r });
+                return Ok(new { result = "success", total = _r.Count, data = _r });
             else
-                return Ok(new { result = "success", total = _r.Count(), data = _r.Take(number).OrderBy(x => x.sent_time) });
+                return Ok(new { result = "success", total = _r.Count, data = _r.Take(number).OrderBy(x => x.sent_time) });
 
         }
 
@@ -227,7 +224,7 @@ namespace WisePBX.NET8.Controllers
             return Ok(new
             {
                 result = "success",
-                total = _r.Count(),
+                total = _r.Count,
                 data = _r
             });
         }

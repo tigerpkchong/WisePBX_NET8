@@ -230,20 +230,29 @@ namespace WisePBX.NET8.Controllers
                 DateTime startDate = (p["startDate"] == null) ? DateTime.Today.AddYears(-1) : Convert.ToDateTime(p["startDate"].ToString());
                 DateTime endDate = (p["endDate"] == null) ? DateTime.Today.AddDays(1) : (Convert.ToDateTime(p["endDate"].ToString())).AddDays(1);
                 int serviceId = (p["serviceId"] == null) ? -1 : Convert.ToInt32((p["serviceId"]??"-1").ToString());
-                
-                string[] agentId = (p["agentId"] == null) ? new string[] { } : 
-                    (p["agentId"].GetType().Name == "JArray") ? p["agentId"].GetValue<string[]>() : 
-                    new string[] { (p["agentId"] ?? "-1").ToString() };
+
+                string[] agentId = { };
+                if (p["agentId"] != null)
+                {
+                    if (p["agentId"]?.GetType().Name == "JArray")
+                        agentId = p["agentId"].GetValue<string[]>();
+                    else
+                        agentId = new string[] { (p["agentId"] ?? "-1").ToString() };
+                }
                 agentId = agentId.Select(m => "|" + m + "|").ToArray();
 
                 string phoneNo = (p["phoneNo"] ?? "").ToString();
                 int callType = Convert.ToInt32((p["callType"] ?? "-1").ToString());
                 string ani = (p["ani"] ?? "").ToString();
                 string dnis = (p["dnis"] ?? "").ToString();
-                int[] callId = (p["callId"] == null) ? new int[] { } :
-                    (p["callId"].GetType().Name == "JArray") ? p["callId"].GetValue<int[]>() :
-                    new int[] { (int)p["callId"].GetValue<int>() };
-
+                int[] callId = { };
+                if (p["callId"] != null)
+                {
+                    if (p["callId"]?.GetType().Name == "JArray")
+                        callId = p["callId"].GetValue<int[]>();
+                    else
+                        callId = new int[] {p["callId"].GetValue<int>() };
+                }
                 if (phoneNo != "" && phoneNo.Length < 8) return Ok(new { result = "fail", details = "Invalid Parameters." });
 
                 string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";

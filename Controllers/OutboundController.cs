@@ -63,7 +63,7 @@ namespace WisePBX.NET8.Controllers
 
             return Ok(new { result = "success", data = _objCase.CaseId });
         }
-        public record UploadForm
+        public partial record UploadForm
         {
             public required int caseNo { get; init; }
             public required int agentId { get; init; }
