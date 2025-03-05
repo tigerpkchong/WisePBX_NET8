@@ -24,11 +24,10 @@ namespace WisePBX.NET8.Controllers
     public class EmailController : _MediaController
     {
         private readonly IConfiguration configuration;
-        private string hostDrive;
-        private string hostName;
-        private string hostAddress;
-        private string fileUploadPath;
-        private IWebHostEnvironment environment;
+        private readonly string hostDrive;
+        private readonly string hostName;
+        private readonly string fileUploadPath;
+        private readonly IWebHostEnvironment environment;
 
         public EmailController(IConfiguration iConfig, IWebHostEnvironment ienvironment)
         {
@@ -36,7 +35,6 @@ namespace WisePBX.NET8.Controllers
             configuration = iConfig;
             hostDrive = configuration.GetValue<string>("hostDrive") ?? "";
             hostName = configuration.GetValue<string>("HostName") ?? "";
-            hostAddress = configuration.GetValue<string>("HostAddress") ?? "";
             fileUploadPath = configuration.GetValue<string>("FileUploadPath") ?? "";
             if (fileUploadPath == "")
                 fileUploadPath = environment.ContentRootPath + "/Uploads";
@@ -106,16 +104,13 @@ namespace WisePBX.NET8.Controllers
             if (_mediaCall == null) return Ok(new { result = "fail", details = "No such record" });
 
 
-            //dynamic data;
             
-            
-            string _file = _mediaCall.Filename;
+            string _file = _mediaCall.Filename??"";
             Regex _rgx = new Regex("\r?\n");
             MimeMessage message = MimeMessage.Load(_file);
-            //message.Prepare(EncodingConstraint.SevenBit);
             string _content = (message.HtmlBody != null) ? message.HtmlBody : _rgx.Replace(message.TextBody, "<br/>");
-            //_content = WebUtility.HtmlEncode(_content);
-            DateTime _timestamp = (_mediaCall.CallType == 12) ? message.Date.LocalDateTime : (DateTime)_mediaCall.ArriveDateTime;
+            DateTime _timestamp = (_mediaCall.CallType == 12) ? message.Date.LocalDateTime : 
+                _mediaCall.ArriveDateTime?? message.Date.LocalDateTime;
             var data = new
             {
                 From = (message.From.Count == 0) ? "" : message.From.Mailboxes.Single().Address,
@@ -137,16 +132,12 @@ namespace WisePBX.NET8.Controllers
                         bodyPart.Content.DecodeTo(memoryStream);
                         byte[] buffer = memoryStream.GetBuffer();
 
-                        //StreamReader reader = new StreamReader(a.Content.Stream);
-
                         var aa = new 
                         {
                             FileName = bodyPart.FileName,
-                            //Base64Data = reader.ReadToEnd(),
                             Base64Data = Convert.ToBase64String(buffer, 0, (int)memoryStream.Length),
                             ContentType = bodyPart.ContentType.MimeType
                         };
-                        //reader.Dispose(); 
                         data.Attachments.Add(aa);
                     }
 
@@ -154,7 +145,7 @@ namespace WisePBX.NET8.Controllers
             }
             foreach (MimeEntity entity in message.Attachments)
             {
-                MimePart a = entity as MimePart;
+                MimePart? a = entity as MimePart;
                 if (a != null)
                 {
                     using (var memoryStream = new MemoryStream())
@@ -163,22 +154,18 @@ namespace WisePBX.NET8.Controllers
                         a.Content.DecodeTo(memoryStream);
                         byte[] buffer = memoryStream.GetBuffer();
 
-                        //StreamReader reader = new StreamReader(a.Content.Stream);
-
                         var aa = new 
                         {
                             FileName = a.FileName,
-                            //Base64Data = reader.ReadToEnd(),
                             Base64Data = Convert.ToBase64String(buffer, 0, (int)memoryStream.Length),
                             ContentType = a.ContentType.MimeType
                         };
-                        //reader.Dispose(); 
                         data.Attachments.Add(aa);
                     }
                 }
                 else
                 {
-                    MessagePart rfc822 = entity as MessagePart;
+                    MessagePart? rfc822 = entity as MessagePart;
                     if (rfc822 != null)
                     {
                         using (var memoryStream = new MemoryStream())
@@ -188,11 +175,9 @@ namespace WisePBX.NET8.Controllers
                             var aa = new 
                             {
                                 FileName = rfc822.Message.Subject,
-                                //Base64Data = reader.ReadToEnd(),
                                 Base64Data = Convert.ToBase64String(buffer, 0, (int)memoryStream.Length),
                                 ContentType = rfc822.ContentType.MimeType
                             };
-                            //reader.Dispose(); 
                             data.Attachments.Add(aa);
                         }
                     }
@@ -228,8 +213,6 @@ namespace WisePBX.NET8.Controllers
         [HttpPost]
         public IActionResult UploadContent([FromBody] JsonObject p)
         {
-            //var httpContext = (HttpContextWrapper)Request.Properties["MS_HttpContext"];
-
             try
             {
                 int agentId = Convert.ToInt32((p["agentId"]??"0").ToString());
@@ -240,15 +223,12 @@ namespace WisePBX.NET8.Controllers
                 if (content == "" || agentId == 0)
                     return Ok(new { result = "fail", details = "Invalid Parameters." });
 
-                if (link != "")
+                if (link != "" && !link.StartsWith($@"{webUrl}/Uploads/"))
                 {
-                    if (link.StartsWith($@"{webUrl}/Uploads/") == false)
-                        return Ok(new { result = "fail", details = "Invalid Link Parameters." });
-
+                    return Ok(new { result = "fail", details = "Invalid Link Parameters." });
                 }
 
                 string _tmpFolder = DateTime.Today.ToString("yyyyMMdd");
-                //string _fillFolder = Path.Combine(environment.WebRootPath ?? environment.ContentRootPath, "Uploads", _tmpFolder);
                 string _fillFolder = Path.Combine(fileUploadPath, _tmpFolder);
                 Directory.CreateDirectory(_fillFolder);
                 string fileName = "Email_" + agentId + "_" + Guid.NewGuid().ToString("N") + ".txt";
@@ -499,17 +479,13 @@ namespace WisePBX.NET8.Controllers
                 List<dynamic> _emailList=new List<dynamic>();
                 foreach (MediaCall _mediaCall in _list)
                 {
-                    //string _file = _mediaCall.Filename.Replace(@"\win2016-demo\", @"\172.17.7.40\");
-                    string _file = _mediaCall.Filename.Replace($@"\\{hostName}\", $@"{hostDrive}:\");
+                    string _file = (_mediaCall.Filename??"").Replace($@"\\{hostName}\", $@"{hostDrive}:\");
                     MimeMessage message = MimeMessage.Load(_file);
 
                     string _content = (message.HtmlBody != null) ? message.HtmlBody : message.TextBody;
                     _content = _rgx.Replace(_content.Substring(0, Math.Min(100, _content.Length)), "<br/>");
 
-                    //MailboxAddress _msgFrom = (MailboxAddress)_msg.MainEntity.From[0];
-
                     
-
                     var _email = new 
                     {
                         CreateDateTime = _mediaCall.CreateDateTime,
