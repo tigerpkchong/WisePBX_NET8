@@ -67,7 +67,7 @@ namespace WisePBX.NET8.Controllers
                     }
                     data.Add(new
                     {
-                        CreateDateTime = ((DateTime)System.IO.File.GetCreationTime(_fullfilePath)).ToString("s"),
+                        CreateDateTime = System.IO.File.GetCreationTime(_fullfilePath).ToString("s"),
                         ContentType = _file.ContentType,
                         FileName = _file.FileName,
                         FilePath = _filePath,
