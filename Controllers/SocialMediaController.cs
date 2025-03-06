@@ -61,19 +61,22 @@ namespace WisePBX.NET8.Controllers
                 {
                     string _filePath = Path.Combine(_fillFolder, _file.FileName);
                     string _fullfilePath = Path.GetFullPath(_filePath);
-                    using (Stream fileStream = new FileStream(_fullfilePath, FileMode.Create))
+                    if (_filePath.StartsWith(_fullfilePath, StringComparison.Ordinal))
                     {
-                        await _file.CopyToAsync(fileStream);
-                    }
-                    data.Add(new
-                    {
-                        CreateDateTime = System.IO.File.GetCreationTime(_fullfilePath).ToString("s"),
-                        ContentType = _file.ContentType,
-                        FileName = _file.FileName,
-                        FilePath = _filePath,
-                        FileUrl = webUrl + "/Uploads/" + _dateFolder + "/" + ticketId + "/" + _file.FileName
+                        using (Stream fileStream = new FileStream(_fullfilePath, FileMode.Create))
+                        {
+                            await _file.CopyToAsync(fileStream);
+                        }
+                        data.Add(new
+                        {
+                            CreateDateTime = System.IO.File.GetCreationTime(_fullfilePath).ToString("s"),
+                            ContentType = _file.ContentType,
+                            FileName = _file.FileName,
+                            FilePath = _filePath,
+                            FileUrl = webUrl + "/Uploads/" + _dateFolder + "/" + ticketId + "/" + _file.FileName
 
-                    });
+                        });
+                    }
                 }
                 return Ok(new { result = "success", data });
             }
