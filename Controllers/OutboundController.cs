@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.IO;
 using System.Text.Json.Nodes;
 using WisePBX.NET8.Models.Wise;
@@ -78,15 +79,16 @@ namespace WisePBX.NET8.Controllers
 
             string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
             string _tmpFolder = ((form.campaignId == 0) ? "C" + form.caseNo : "O" + form.campaignId) + "-" + form.agentId + "-" + DateTime.Now.Ticks;
-            string _fillFolder = Path.Combine(fileUploadPath, "Uploads", _tmpFolder);
+            string _fillFolder = Path.Combine(fileUploadPath, _tmpFolder);
             Directory.CreateDirectory(_fillFolder);
             var data = new List<dynamic>();
             foreach (var _file in form.files)
             {
                 string _filePath = Path.Combine(_fillFolder, _file.FileName);
-                //if (_filePath.StartsWith(_fillFolder, StringComparison.Ordinal))
+                string _fullfilePath = Path.GetFullPath(_filePath);
+                if (_filePath.StartsWith(_fullfilePath, StringComparison.Ordinal))
                 {
-                    using (Stream fileStream = new FileStream(_filePath, FileMode.Create))
+                    using (Stream fileStream = new FileStream(_fullfilePath, FileMode.Create))
                     {
                         await _file.CopyToAsync(fileStream);
                     }
@@ -94,7 +96,7 @@ namespace WisePBX.NET8.Controllers
 
                     data.Add(new
                     {
-                        CreateDateTime = ((DateTime)System.IO.File.GetCreationTime(_filePath)).ToString("s"),
+                        CreateDateTime = ((DateTime)System.IO.File.GetCreationTime(_fullfilePath)).ToString("s"),
                         FileName = _file.FileName,
                         FilePath = _filePath,
                         ContentType = _file.ContentType,

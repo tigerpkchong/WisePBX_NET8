@@ -8,6 +8,7 @@ namespace WisePBX.NET8.Controllers
     [ApiController]
     public class _MediaController : ControllerBase
     {
+        [HttpPost]
         public IActionResult GetCount(int callType, int agentId, string dnis, int handled)
         {
             WiseEntities _wisedb = new WiseEntities();
@@ -18,12 +19,13 @@ namespace WisePBX.NET8.Controllers
             return Ok(new { result = "success", data = _count });
         }
 
+        [HttpPost]
         public IActionResult AssignAgent(int callType, List<int> mediaIds, int assignTo, int updatedBy)
         {
             WiseEntities _wisedb = new WiseEntities();
             List<Object> data = new List<Object>();
 
-            List<MediaCall> _medialCallList = (from m in _wisedb.MediaCalls
+            List<MediaCall>? _medialCallList = (from m in _wisedb.MediaCalls
                                                where mediaIds.Contains(m.CallID) && m.CallType == callType //&& m.AgentID != 0
                                                select m).ToList();
             if (_medialCallList != null)
@@ -34,7 +36,6 @@ namespace WisePBX.NET8.Controllers
                     if (_m.IsHandleFinish == 1)
                     {
                         if (details != "") details += " ,";
-                        //details += string.Format("Record {0} was already assigned to {1}", _m.CallID, _m.AgentID);
                         details += string.Format("Record {0} was already handled", _m.CallID);
                     }
                 }
@@ -67,7 +68,7 @@ namespace WisePBX.NET8.Controllers
             }
             return Ok(new { result = "success", data });
         }
-
+        [HttpPost]
         public IActionResult SetHandled(int callType, int mediaId, string caseNo, int updatedBy)
         {
             WiseEntities _wisedb = new WiseEntities();
@@ -96,7 +97,7 @@ namespace WisePBX.NET8.Controllers
 
             return Ok(new { result = "success", data = _medialCall.DNIS });
         }
-
+        [HttpPost]
         public IActionResult SetRead(int callType, int mediaId, int updatedBy)
         {
             WiseEntities _wisedb = new WiseEntities();
@@ -127,11 +128,11 @@ namespace WisePBX.NET8.Controllers
             }
             return Ok(new { result = "fail", details = "it is already read" });
         }
-
+        [HttpPost]
         public IActionResult SetRead(int callType, int[] mediaIds, int updatedBy)
         {
             WiseEntities _wisedb = new WiseEntities();
-            List<MediaCall> _medialList = (from m in _wisedb.MediaCalls
+            var _medialList = (from m in _wisedb.MediaCalls
                                            where mediaIds.Contains(m.CallID)
                                            && m.CallType == callType
                                            select m).ToList();
@@ -160,11 +161,10 @@ namespace WisePBX.NET8.Controllers
             }
             return Ok(new { result = "success" });
         }
-
+        [HttpPost]
         public IActionResult GetCallid(int callType, int mediaCaseID, int agentID)
         {
             WiseEntities _wisedb = new WiseEntities();
-            //int _callId=0;
             MediaCall? _m;
             do
             {
@@ -174,7 +174,6 @@ namespace WisePBX.NET8.Controllers
                 if (_m == null) System.Threading.Thread.Sleep(500);
             } while (_m == null);
             return Ok(new { result = "success", data = _m.CallID });
-            //ScrmEntities _scrmdb = new ScrmEntities();
         }
     }
 }
