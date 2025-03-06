@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Globalization;
+using System.IO;
 using System.Text.Json.Nodes;
 using WisePBX.NET8.Models.SConnector;
 using WisePBX.NET8.Models.SConnector_SP;
@@ -50,11 +51,8 @@ namespace WisePBX.NET8.Controllers
                 if (form.files.Count == 0)
                     return Ok(new { result = "fail", details = "No File Upload." });
 
-                string _fillFolder = Path.Combine(fileUploadPath, "Uploads");
                 string _dateFolder = DateTime.Today.ToString("yyyyMMdd");
-                _fillFolder = Path.Combine(_fillFolder, _dateFolder);
-                if (!Directory.Exists(_fillFolder)) Directory.CreateDirectory(_fillFolder);
-                _fillFolder = Path.Combine(_fillFolder, ticketId);
+                string _fillFolder = Path.Combine(fileUploadPath, _dateFolder, ticketId);
                 if (!Directory.Exists(_fillFolder)) Directory.CreateDirectory(_fillFolder);
                 string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
 
@@ -62,13 +60,14 @@ namespace WisePBX.NET8.Controllers
                 foreach (var _file in form.files)
                 {
                     string _filePath = Path.Combine(_fillFolder, _file.FileName);
-                    using (Stream fileStream = new FileStream(_filePath, FileMode.Create))
+                    string _fullfilePath = Path.GetFullPath(_filePath);
+                    using (Stream fileStream = new FileStream(_fullfilePath, FileMode.Create))
                     {
                         await _file.CopyToAsync(fileStream);
                     }
                     data.Add(new
                     {
-                        CreateDateTime = ((DateTime)System.IO.File.GetCreationTime(_filePath)).ToString("s"),
+                        CreateDateTime = ((DateTime)System.IO.File.GetCreationTime(_fullfilePath)).ToString("s"),
                         ContentType = _file.ContentType,
                         FileName = _file.FileName,
                         FilePath = _filePath,
