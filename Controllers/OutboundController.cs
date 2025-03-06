@@ -86,7 +86,7 @@ namespace WisePBX.NET8.Controllers
             {
                 string _filePath = Path.Combine(_fillFolder, _file.FileName);
                 string _fullfilePath = Path.GetFullPath(_filePath);
-                //if (_filePath.StartsWith(_fullfilePath, StringComparison.Ordinal))
+                if (_filePath.StartsWith(_fullfilePath, StringComparison.Ordinal))
                 {
                     using (Stream fileStream = new FileStream(_fullfilePath, FileMode.Create))
                     {
