@@ -8,6 +8,7 @@ namespace WisePBX.NET8.Controllers
     [ApiController]
     public class SMSController : ControllerBase
     {
+        [HttpPost]
         public IActionResult GetContent([FromBody] dynamic p)
         {
             int id = (p.id == null) ? -1 : Convert.ToInt32(p.id.Value);
