@@ -66,7 +66,7 @@ namespace WisePBX.NET8.Controllers
             string dnis = (p["dnis"] ?? "").ToString();
             int agentId = Convert.ToInt32(p["agentId"] ?? "-1");
             int handled = Convert.ToInt32(p["handled"] ?? "0");
-
+            string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
             if (dnis == "" || agentId == -1) return Ok(new { result = "fail", details = strInvalidParameters });
 
             WiseEntities _wisedb = new WiseEntities();
@@ -82,7 +82,7 @@ namespace WisePBX.NET8.Controllers
             var data = new List<dynamic>();
             foreach (MediaCall _medialCall in _mediaList)
             {
-                string _file = (_medialCall.Filename??"").Replace("\\\\win2016-demo\\", "http://172.17.7.40/wisepbx/").Replace(@"\", @"/");
+                string _file = (_medialCall.Filename??"").Replace(@"\", @"/").Replace("//" + hostName + "/", webUrl + "/");
 
                 data.Add(new 
                 {
