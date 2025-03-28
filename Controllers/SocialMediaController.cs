@@ -16,6 +16,8 @@ namespace WisePBX.NET8.Controllers
     [ApiController]
     public class SocialMediaController : ControllerBase
     {
+        private readonly string strInvalidParameters = "Invalid Parameters.";
+        
         private readonly string hostAddress;
         private readonly string fileUploadPath;
         public SocialMediaController(IConfiguration iConfig, IWebHostEnvironment ienvironment)
@@ -42,7 +44,7 @@ namespace WisePBX.NET8.Controllers
                 int agentId = form.agentId;
 
                 if (ticketId == string.Empty || agentId == 0)
-                    return Ok(new { result = "fail", details = "Invalid Parameters." });
+                    return Ok(new { result = "fail", details = strInvalidParameters });
                 if (form.files.Count == 0)
                     return Ok(new { result = "fail", details = "No File Upload." });
 
@@ -87,7 +89,7 @@ namespace WisePBX.NET8.Controllers
         {
             try
             {
-                if (p == null) return Ok(new { result = "error", details = "Invalid Parameters." });
+                if (p == null) return Ok(new { result = "error", details = strInvalidParameters });
                 string userId = (p["userId"] ?? "").ToString();
                 string entry = (p["entry"] ?? "").ToString();
                 string companyCode = (p["companyCode"] ?? "").ToString();
@@ -118,7 +120,7 @@ namespace WisePBX.NET8.Controllers
         [HttpPost]
         public IActionResult GetStatistics([FromBody] JsonObject p)
         {
-            if (p == null) return Ok(new { result = "error", details = "Invalid Parameters." });
+            if (p == null) return Ok(new { result = "error", details = strInvalidParameters });
             string userId = (p["userId"] ?? "").ToString();
             string entry = (p["entry"] ?? "").ToString();
             string companyCode = (p["companyCode"] ?? "").ToString();
@@ -139,9 +141,9 @@ namespace WisePBX.NET8.Controllers
         [HttpPost]
         public IActionResult GetCannedFiles([FromBody] JsonObject p)
         {
-            if (p == null) return Ok(new { result = "error", details = "Invalid Parameters." });
+            if (p == null) return Ok(new { result = "error", details = strInvalidParameters });
             string companyName = (p["companyName"] ?? "").ToString();
-            if (companyName == "") return Ok(new { result = "error", details = "Invalid Parameters." });
+            if (companyName == "") return Ok(new { result = "error", details = strInvalidParameters });
 
             SConnectorEntities _sconnDB = new SConnectorEntities();
             var _r = (from m in _sconnDB.SCRM_CannedFiles
@@ -162,9 +164,9 @@ namespace WisePBX.NET8.Controllers
         [HttpPost]
         public IActionResult GetCannedMsgs([FromBody] JsonObject p)
         {
-            if (p == null) return Ok(new { result = "error", details = "Invalid Parameters." });
+            if (p == null) return Ok(new { result = "error", details = strInvalidParameters });
             string companyName = (p["companyName"] ?? "").ToString();
-            if (companyName == "") return Ok(new { result = "error", details = "Invalid Parameters." });
+            if (companyName == "") return Ok(new { result = "error", details = strInvalidParameters });
 
             SConnectorEntities _sconnDB = new SConnectorEntities();
             var _r = (from m in _sconnDB.SCRM_CannedMsgs
@@ -178,9 +180,9 @@ namespace WisePBX.NET8.Controllers
         [HttpPost]
         public IActionResult GetFBComments([FromBody] JsonObject p)
         {
-            if (p == null) return Ok(new { result = "error", details = "Invalid Parameters." });
+            if (p == null) return Ok(new { result = "error", details = strInvalidParameters });
             long ticketId = Convert.ToInt64((p["ticketId"]??"0").ToString());
-            if (ticketId == 0) return Ok(new { result = "error", details = "Invalid Parameters." });
+            if (ticketId == 0) return Ok(new { result = "error", details = strInvalidParameters });
             string aboveMsgId = Convert.ToString((p["aboveMsgId"]??"").ToString());
             string afterMsgId = Convert.ToString((p["afterMsgId"] ?? "").ToString());
             int number = Convert.ToInt32((p["number"]??"0").ToString());
@@ -205,11 +207,11 @@ namespace WisePBX.NET8.Controllers
         [HttpPost]
         public IActionResult GetUserFBComments([FromBody] JsonObject p)
         {
-            if (p == null) return Ok(new { result = "error", details = "Invalid Parameters." });
+            if (p == null) return Ok(new { result = "error", details = strInvalidParameters });
             string companyCode = (p["companyCode"]??"").ToString();
-            if (companyCode == "") return Ok(new { result = "error", details = "Invalid Parameters." });
+            if (companyCode == "") return Ok(new { result = "error", details = strInvalidParameters });
             string endUserId = (p["endUserId"] ?? "").ToString();
-            if (endUserId == "") return Ok(new { result = "error", details = "Invalid Parameters." });
+            if (endUserId == "") return Ok(new { result = "error", details = strInvalidParameters });
 
             SConnectorEntities _sconnDB = new SConnectorEntities();
             var _r = (from m in _sconnDB.SC_Tickets
@@ -229,11 +231,11 @@ namespace WisePBX.NET8.Controllers
         [HttpPost]
         public IActionResult GetFBReplyComments([FromBody] JsonObject p)
         {
-            if (p == null) return Ok(new { result = "error", details = "Invalid Parameters." });
+            if (p == null) return Ok(new { result = "error", details = strInvalidParameters });
             long ticketId = Convert.ToInt64((p["ticketId"] ?? "0").ToString());
-            if (ticketId == 0) return Ok(new { result = "error", details = "Invalid Parameters." });
+            if (ticketId == 0) return Ok(new { result = "error", details = strInvalidParameters });
             string CommentId = (p["CommentId"] ?? "").ToString();
-            if (CommentId == "") return Ok(new { result = "error", details = "Invalid Parameters." });
+            if (CommentId == "") return Ok(new { result = "error", details = strInvalidParameters });
             int number = Convert.ToInt32((p["number"] ?? "0").ToString());
 
             var baseUri = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
@@ -258,9 +260,9 @@ namespace WisePBX.NET8.Controllers
         [HttpPost]
         public IActionResult GetFormData([FromBody] JsonObject p)
         {
-            if (p == null) return Ok(new { result = "error", details = "Invalid Parameters." });
+            if (p == null) return Ok(new { result = "error", details = strInvalidParameters });
             long ticketId = Convert.ToInt64((p["ticketId"] ?? "0").ToString());
-            if (ticketId == 0) return Ok(new { result = "error", details = "Invalid Parameters." });
+            if (ticketId == 0) return Ok(new { result = "error", details = strInvalidParameters });
             SConnectorEntities _sconnDB = new SConnectorEntities();
             var _start_time = (from m in _sconnDB.SC_Tickets
                                where m.ticket_id == ticketId
@@ -280,11 +282,11 @@ namespace WisePBX.NET8.Controllers
         [HttpPost]
         public IActionResult GetWhatsapp([FromBody] JsonObject p)
         {
-            if (p == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
+            if (p == null) return Ok(new { result = "fail", details = strInvalidParameters });
 
-            if (p["startDate"] == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
-            if (p["endDate"] == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
-            if (p["companyCode"] == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
+            if (p["startDate"] == null) return Ok(new { result = "fail", details = strInvalidParameters });
+            if (p["endDate"] == null) return Ok(new { result = "fail", details = strInvalidParameters });
+            if (p["companyCode"] == null) return Ok(new { result = "fail", details = strInvalidParameters });
 
             DateTime? startDate = Convert.ToDateTime(p["startDate"]?.ToString());
             DateTime? endDate = (Convert.ToDateTime(p["endDate"]?.ToString()));
@@ -313,9 +315,9 @@ namespace WisePBX.NET8.Controllers
         [HttpPost]
         public IActionResult GetAgentName([FromBody] JsonObject p)
         {
-            if (p == null) return Ok(new { result = "error", details = "Invalid Parameters." });
+            if (p == null) return Ok(new { result = "error", details = strInvalidParameters });
             int[]? agentIds = (p["agentIds"] == null) ? null : p["agentIds"]?.GetValue<int[]>();
-            if (agentIds == null) return Ok(new { result = "error", details = "Invalid Parameters." });
+            if (agentIds == null) return Ok(new { result = "error", details = strInvalidParameters });
             WiseEntities _wiseDB = new WiseEntities();
 
             var _r = (from m in _wiseDB.AgentInfos

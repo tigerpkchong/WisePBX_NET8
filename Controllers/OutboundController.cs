@@ -11,6 +11,8 @@ namespace WisePBX.NET8.Controllers
     [ApiController]
     public class OutboundController : ControllerBase
     {
+        private readonly string strInvalidParameters = "Invalid Parameters.";
+
         private readonly string fileUploadPath;
         public OutboundController(IConfiguration iConfig,IWebHostEnvironment ienvironment)
         {
@@ -25,7 +27,7 @@ namespace WisePBX.NET8.Controllers
             int caseId = (p.caseId == null) ? -1 : Convert.ToInt32(p.caseId.Value);
             int agentId = (p.agentId == null) ? -1 : Convert.ToInt32(p.agentId.Value);
             if (caseId == -1 || agentId == -1)
-                return Ok(new { result = "fail", details = "Invalid Parameters." });
+                return Ok(new { result = "fail", details = strInvalidParameters });
             WiseEntities _wisedb = new WiseEntities();
             int _callId = 0, _count = 0;
             do
@@ -48,7 +50,7 @@ namespace WisePBX.NET8.Controllers
         {
             int agentId = (p.agentId == null) ? -1 : Convert.ToInt32(p.agentId.Value);
             if (agentId == -1)
-                return Ok(new { result = "fail", details = "Invalid Parameters." });
+                return Ok(new { result = "fail", details = strInvalidParameters });
             WiseEntities _wisedb = new WiseEntities();
             var _objCase = new MediaCall_CaseID
             {

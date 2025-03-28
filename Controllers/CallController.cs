@@ -12,6 +12,8 @@ namespace WisePBX.NET8.Controllers
     
     public class CallController : _MediaController
     {
+        private readonly string strInvalidParameters = "Invalid Parameters.";
+        private readonly string strNoSuchRecord = "No such record.";
         
         private readonly string hostDrive;
         private readonly string hostName;
@@ -26,7 +28,7 @@ namespace WisePBX.NET8.Controllers
         public IActionResult GetContent([FromBody] JsonObject p)
         {
             int id = Convert.ToInt32((p["id"]??"0").ToString());
-            if (id == 0) return Ok(new { result = "fail", details = "Invalid Parameters." });
+            if (id == 0) return Ok(new { result = "fail", details = strInvalidParameters });
             string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
 
             WiseEntities _wisedb = new WiseEntities();
@@ -53,17 +55,17 @@ namespace WisePBX.NET8.Controllers
                             CallerDisplay = (x.CallType == 1) ? x.DNIS : x.ANI,
                             TalkTime = x.TalkTime
                         });
-            if (data.Count() == 0) return Ok(new { result = "fail", details = "No such record" });
+            if (data.Count() == 0) return Ok(new { result = "fail", details = strNoSuchRecord });
             return Ok(new { result = "success", data });
         }
         //
         [HttpPost]
         public IActionResult GetVoiceMail([FromBody] JsonObject p)
         {
-            if (p == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
+            if (p == null) return Ok(new { result = "fail", details = strInvalidParameters });
 
-            if (p["startDate"] == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
-            if (p["endDate"] == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
+            if (p["startDate"] == null) return Ok(new { result = "fail", details = strInvalidParameters });
+            if (p["endDate"] == null) return Ok(new { result = "fail", details = strInvalidParameters });
             
             DateTime startDate = Convert.ToDateTime((p["startDate"]??"").ToString());
             DateTime endDate = Convert.ToDateTime((p["endDate"] ?? "").ToString()).AddDays(1);
@@ -104,7 +106,7 @@ namespace WisePBX.NET8.Controllers
                             m.IvrsData,
                             m.ReadFlag,
                         }).AsEnumerable().Take(1000);
-            if (data.Count() == 0) return Ok(new { result = "fail", details = "No such record" });
+            if (data.Count() == 0) return Ok(new { result = "fail", details = strNoSuchRecord });
             return Ok(new { result = "success", data });
         }
 
@@ -113,10 +115,10 @@ namespace WisePBX.NET8.Controllers
         {
             try
             {
-                if (p == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
+                if (p == null) return Ok(new { result = "fail", details = strInvalidParameters });
 
-                if (p["startDate"] == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
-                if (p["endDate"] == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
+                if (p["startDate"] == null) return Ok(new { result = "fail", details = strInvalidParameters });
+                if (p["endDate"] == null) return Ok(new { result = "fail", details = strInvalidParameters });
 
 
                 DateTime startDate = Convert.ToDateTime((p["startDate"] ?? "").ToString());
@@ -125,7 +127,7 @@ namespace WisePBX.NET8.Controllers
                 int agentId = Convert.ToInt32((p["agentId"]??"-1").ToString());
                 string phoneNo = (p["phoneNo"]??"").ToString();
                 
-                if (phoneNo != "" && phoneNo.Length < 8) return Ok(new { result = "fail", details = "Invalid Parameters." });
+                if (phoneNo != "" && phoneNo.Length < 8) return Ok(new { result = "fail", details = strInvalidParameters });
 
                 string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
 
@@ -171,7 +173,7 @@ namespace WisePBX.NET8.Controllers
                         }).ToList();
                 
                 
-                if (data.Count == 0) return Ok(new { result = "fail", details = "No such record" });
+                if (data.Count == 0) return Ok(new { result = "fail", details = strNoSuchRecord });
                 return Ok(new { result = "success", data });
             }
             catch (Exception e)
@@ -185,7 +187,7 @@ namespace WisePBX.NET8.Controllers
         {
             try
             {
-                if (p == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
+                if (p == null) return Ok(new { result = "fail", details = strInvalidParameters });
                 
                 DateTime startDate = (p["startDate"] == null) ? DateTime.Today.AddYears(-1) : Convert.ToDateTime(p["startDate"].ToString());
                 DateTime endDate = (p["endDate"] == null) ? DateTime.Today.AddDays(1) : (Convert.ToDateTime((p["endDate"]??"").ToString())).AddDays(1);
@@ -214,7 +216,7 @@ namespace WisePBX.NET8.Controllers
                     else
                         callId = [p!["callId"]!.GetValue<int>()];
                 }
-                if (phoneNo != "" && phoneNo.Length < 8) return Ok(new { result = "fail", details = "Invalid Parameters." });
+                if (phoneNo != "" && phoneNo.Length < 8) return Ok(new { result = "fail", details = strInvalidParameters });
 
                 string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
 
@@ -263,7 +265,7 @@ namespace WisePBX.NET8.Controllers
                     });
                 });
                 
-                if (data.Count == 0) return Ok(new { result = "fail", details = "No such record" });
+                if (data.Count == 0) return Ok(new { result = "fail", details = strNoSuchRecord });
                 return Ok(new { result = "success", data });
             }
             catch (Exception e)
@@ -301,9 +303,9 @@ namespace WisePBX.NET8.Controllers
         {
             try
             {
-                if (p == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
+                if (p == null) return Ok(new { result = "fail", details = strInvalidParameters });
                 int agentId = Convert.ToInt32((p["agentId"]??"-1").ToString());
-                if (agentId == -1) return Ok(new { result = "fail", details = "Invalid Parameters." });
+                if (agentId == -1) return Ok(new { result = "fail", details = strInvalidParameters });
 
                 WiseEntities _wisedb = new WiseEntities();
                 var info = (from i in _wisedb.AgentInfos
@@ -327,11 +329,11 @@ namespace WisePBX.NET8.Controllers
         {
             try
             {
-                if (p == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
+                if (p == null) return Ok(new { result = "fail", details = strInvalidParameters });
                 string serviceName = (p["serviceName"]??"").ToString();
 
                 if (serviceName == "")
-                    return Ok(new { result = "fail", details = "Invalid Parameters." });
+                    return Ok(new { result = "fail", details = strInvalidParameters });
 
                 WiseEntities _wisedb = new WiseEntities();
                 var data = (from i in _wisedb.OutboundANIs
@@ -339,7 +341,7 @@ namespace WisePBX.NET8.Controllers
                             i.OutboundType == "call"
                             select i.ANI).SingleOrDefault();
                 if (data == null)
-                    return Ok(new { result = "fail", details = "No such record." });
+                    return Ok(new { result = "fail", details = strNoSuchRecord });
                 return Ok(new { result = "success", data });
             }
             catch (Exception e)

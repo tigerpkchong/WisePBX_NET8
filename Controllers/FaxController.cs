@@ -10,6 +10,9 @@ namespace WisePBX.NET8.Controllers
     [ApiController]
     public class FaxController : _MediaController
     {
+        private readonly string strInvalidParameters = "Invalid Parameters.";
+        private readonly string strNoSuchRecord = "No such record.";
+
         private readonly string hostName;
         
         public FaxController(IConfiguration iConfig)
@@ -20,12 +23,12 @@ namespace WisePBX.NET8.Controllers
         [ActionName("GetCount")]
         public IActionResult GetCount([FromBody] JsonObject p)
         {
-            if (p == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
+            if (p == null) return Ok(new { result = "fail", details = strInvalidParameters });
             string dnis = (p["dnis"] ?? "").ToString();
             int agentId = Convert.ToInt32(p["agentId"] ?? "-1");
             int handled = Convert.ToInt32(p["handled"] ?? "0");
 
-            if (dnis == "" || agentId == -1) return Ok(new { result = "fail", details = "Invalid Parameters." });
+            if (dnis == "" || agentId == -1) return Ok(new { result = "fail", details = strInvalidParameters });
 
             return base.GetCount(8, agentId, dnis, handled);
         }
@@ -37,7 +40,7 @@ namespace WisePBX.NET8.Controllers
             int mediaId = Convert.ToInt32(p["mediaId"] ?? "0");
             string caseNo = (p["caseNo"] ?? "0").ToString();
             int updatedBy = Convert.ToInt32(p["updatedBy"] ?? "0");
-            if (mediaId == 0) return Ok(new { result = "fail", details = "Invalid Parameters." });
+            if (mediaId == 0) return Ok(new { result = "fail", details = strInvalidParameters });
 
             return base.SetHandled(8, mediaId, caseNo, updatedBy);
         }
@@ -50,7 +53,7 @@ namespace WisePBX.NET8.Controllers
             int assignTo = Convert.ToInt32(p["assignTo"] ?? "-1");
             int updatedBy = Convert.ToInt32(p["updatedBy"] ?? "-1");
             if (mediaIds == null || assignTo == -1 || updatedBy == -1)
-                return Ok(new { result = "fail", details = "Invalid Parameters." });
+                return Ok(new { result = "fail", details = strInvalidParameters });
 
             return base.AssignAgent(8, mediaIds, assignTo, updatedBy);
         }
@@ -59,12 +62,12 @@ namespace WisePBX.NET8.Controllers
         [ActionName("GetList")]
         public IActionResult GetList([FromBody] JsonObject p)
         {
-            if (p == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
+            if (p == null) return Ok(new { result = "fail", details = strInvalidParameters });
             string dnis = (p["dnis"] ?? "").ToString();
             int agentId = Convert.ToInt32(p["agentId"] ?? "-1");
             int handled = Convert.ToInt32(p["handled"] ?? "0");
 
-            if (dnis == "" || agentId == -1) return Ok(new { result = "fail", details = "Invalid Parameters." });
+            if (dnis == "" || agentId == -1) return Ok(new { result = "fail", details = strInvalidParameters });
 
             WiseEntities _wisedb = new WiseEntities();
 
@@ -98,13 +101,13 @@ namespace WisePBX.NET8.Controllers
         public IActionResult GetContent([FromBody] JsonObject p)
         {
             int id = Convert.ToInt32((p["id"]??"-1").ToString());
-            if (id == -1) return Ok(new { result = "fail", details = "Invalid Parameters." });
+            if (id == -1) return Ok(new { result = "fail", details = strInvalidParameters });
             string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
             WiseEntities _wisedb = new WiseEntities();
             MediaCall? _mediaCall = (from m in _wisedb.MediaCalls
                                     where m.CallID == id && (m.CallType == 8 || m.CallType == 13)
                                     select m).SingleOrDefault();
-            if (_mediaCall == null) return Ok(new { result = "fail", details = "No such record" });
+            if (_mediaCall == null) return Ok(new { result = "fail", details = strNoSuchRecord });
 
             string _file = (_mediaCall.Filename??"").Replace("//" + hostName + "/", webUrl + "/").Replace(@"\", @"/");
             var data = new 
