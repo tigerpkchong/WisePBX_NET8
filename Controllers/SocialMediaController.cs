@@ -48,18 +48,19 @@ namespace WisePBX.NET8.Controllers
                 if (form.files.Count == 0)
                     return Ok(new { result = "fail", details = "No File Upload." });
 
-                string _dateFolder = DateTime.Today.ToString("yyyyMMdd");
-                string _fillFolder = Path.Combine(fileUploadPath, _dateFolder, ticketId);
-                if (_fillFolder.StartsWith(Path.GetFullPath(_fillFolder), StringComparison.Ordinal))
+                
+                string _fileFolder = Path.Combine(fileUploadPath, DateTime.Today.ToString("yyyyMMdd"), ticketId);
+                string _fullfileFolder = Path.GetFullPath(_fileFolder);
+                if (_fileFolder.StartsWith(_fullfileFolder, StringComparison.Ordinal))
                 {
-                    Directory.CreateDirectory(_fillFolder);
+                    Directory.CreateDirectory(_fullfileFolder);
                 }
                 string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
 
                 var data = new List<dynamic>();
                 foreach (var _file in form.files)
                 {
-                    string _filePath = Path.Combine(_fillFolder, _file.FileName);
+                    string _filePath = Path.Combine(_fileFolder, _file.FileName);
                     string _fullfilePath = Path.GetFullPath(_filePath);
                     if (_filePath.StartsWith(_fullfilePath, StringComparison.Ordinal))
                     {
