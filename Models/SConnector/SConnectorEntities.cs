@@ -6,9 +6,6 @@ namespace WisePBX.NET8.Models.SConnector;
 
 public partial class SConnectorEntities : DbContext
 {
-    public SConnectorEntities()
-    {
-    }
     public SConnectorEntities(DbContextOptions<SConnectorEntities> options)
         : base(options)
     {
@@ -25,9 +22,6 @@ public partial class SConnectorEntities : DbContext
     public virtual DbSet<SC_OnlineForm> SC_OnlineForms { get; set; }
 
     public virtual DbSet<SC_Ticket> SC_Tickets { get; set; }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer(Environment.GetEnvironmentVariable("SconnConnectionString"));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

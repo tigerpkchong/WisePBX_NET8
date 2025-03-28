@@ -19,8 +19,12 @@ namespace WisePBX.NET8.Controllers
         private readonly string hostDrive;
         private readonly string hostName;
         private readonly string hostAddress;
-        public VmailController(IConfiguration iConfig)
+
+        private readonly WiseEntities _wisedb;
+        public VmailController(IConfiguration iConfig, WiseEntities wiseEntities)
+            :base(wiseEntities)
         {
+            _wisedb = wiseEntities;
             hostDrive = iConfig.GetValue<string>("hostDrive") ?? "";
             hostName = iConfig.GetValue<string>("HostName") ?? "";
             hostAddress = iConfig.GetValue<string>("HostAddress") ?? "";
@@ -52,7 +56,6 @@ namespace WisePBX.NET8.Controllers
             int agentId = Convert.ToInt32((p["agentId"] ?? "-1").ToString());
             int handled = Convert.ToInt32((p["handled"] ?? "0").ToString());
             
-            WiseEntities _wisedb = new WiseEntities();
             var _mediaList = (from m in _wisedb.MediaCalls
                               where (agentId == -1 || m.AgentID == agentId) && m.CallType == 7 &&
                               dnis.Contains((m.DNIS??"")) &&
@@ -137,8 +140,6 @@ namespace WisePBX.NET8.Controllers
             int id = Convert.ToInt32((p["id"]??"-1").ToString());
             if (id <= 0) return Ok(new { result = strFail, details = strInvalidParameters });
             string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
-
-            WiseEntities _wisedb = new WiseEntities();
 
             var _vmail = (from m in _wisedb.MediaCalls
                           join v in _wisedb.Voicemails on m.PrevCallID equals v.CallID

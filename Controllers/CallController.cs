@@ -5,10 +5,11 @@ using System.Text.Json;
 using Newtonsoft.Json;
 using System.Text.Json.Nodes;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using System.Runtime.CompilerServices;
+using static Org.BouncyCastle.Math.EC.ECCurve;
 namespace WisePBX.NET8.Controllers
 {
     [Route("api/[controller]/[action]")]
-    
     
     public class CallController : _MediaController
     {
@@ -16,16 +17,17 @@ namespace WisePBX.NET8.Controllers
         private readonly string strFail = "fail";
         private readonly string strInvalidParameters = "Invalid Parameters.";
         private readonly string strNoSuchRecord = "No such record.";
-        
+
         private readonly string hostDrive;
         private readonly string hostName;
-        
-        public CallController(IConfiguration iConfig)
-        {
+
+        private readonly WiseEntities _wisedb;
+        public CallController(IConfiguration iConfig, WiseEntities wiseEntities) : base(wiseEntities) {
+            _wisedb = wiseEntities;
             hostDrive = iConfig.GetValue<string>("hostDrive") ?? "";
             hostName = iConfig.GetValue<string>("HostName") ?? "";
-        }
 
+        }
         [HttpPost]
         public IActionResult GetContent([FromBody] JsonObject p)
         {
@@ -33,7 +35,6 @@ namespace WisePBX.NET8.Controllers
             if (id == 0) return Ok(new { result = strFail, details = strInvalidParameters });
             string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
 
-            WiseEntities _wisedb = new WiseEntities();
             var data = (from c in _wisedb.Calls
                         join v in _wisedb.Voicelogs on c.CallID equals v.CallID
                         into ps
@@ -79,7 +80,6 @@ namespace WisePBX.NET8.Controllers
             int read = Convert.ToInt32((p["read"] ?? "-1").ToString());
 
             string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
-            WiseEntities _wisedb = new WiseEntities();
             var data = (from m in _wisedb.MediaCalls
                         join v in _wisedb.Voicemails on m.PrevCallID equals v.CallID
                         into ps
@@ -133,8 +133,6 @@ namespace WisePBX.NET8.Controllers
 
                 string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
 
-                WiseEntities _wisedb = new WiseEntities();
-                
                 var data = (from c in _wisedb.Calls
                         join v in _wisedb.Voicelogs on c.CallID equals v.CallID
                         where (c.Calltype >= 1 && c.Calltype <= 5)
@@ -222,8 +220,6 @@ namespace WisePBX.NET8.Controllers
 
                 string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
 
-                WiseEntities _wisedb = new WiseEntities();
-
                 var r = (from v in _wisedb.VW_FullVoiceLogs
                          join s in _wisedb.Services on v.ServiceID equals s.ServiceID
                          into ps
@@ -282,7 +278,6 @@ namespace WisePBX.NET8.Controllers
         {
             try
             {
-                WiseEntities _wisedb = new WiseEntities();
                 var data = (from i in _wisedb.AgentInfos
                             orderby i.AgentID
                             select new
@@ -309,7 +304,6 @@ namespace WisePBX.NET8.Controllers
                 int agentId = Convert.ToInt32((p["agentId"]??"-1").ToString());
                 if (agentId == -1) return Ok(new { result = strFail, details = strInvalidParameters });
 
-                WiseEntities _wisedb = new WiseEntities();
                 var info = (from i in _wisedb.AgentInfos
                             where i.AgentID == agentId
                             select i
@@ -337,7 +331,6 @@ namespace WisePBX.NET8.Controllers
                 if (serviceName == "")
                     return Ok(new { result = strFail, details = strInvalidParameters });
 
-                WiseEntities _wisedb = new WiseEntities();
                 var data = (from i in _wisedb.OutboundANIs
                             where i.ServiceName == serviceName &&
                             i.OutboundType == "call"

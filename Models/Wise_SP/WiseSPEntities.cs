@@ -4,10 +4,6 @@ namespace WisePBX.NET8.Models.Wise_SP
 {
     public partial class WiseSPEntities : DbContext
     {
-        public WiseSPEntities()
-        {
-        }
-
         public WiseSPEntities(DbContextOptions<WiseSPEntities> options)
             : base(options)
         {
@@ -34,9 +30,6 @@ namespace WisePBX.NET8.Models.Wise_SP
                 .FromSqlInterpolated($"[dbo].[SP_Dashboard_Data_Agent] {days_before}, {servicelist}")
                 .ToArray();
         }
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            => optionsBuilder.UseSqlServer(Environment.GetEnvironmentVariable("WiseConnectionString"));
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<SP_Dashboard_Data_Agent_Result>(entity =>

@@ -4,10 +4,6 @@ namespace WisePBX.NET8.Models.SConnector_SP
 {
     public partial class SConnectorSPEntities : DbContext
     {
-        public SConnectorSPEntities()
-        {
-        }
-
         public SConnectorSPEntities(DbContextOptions<SConnectorSPEntities> options)
             : base(options)
         {
@@ -20,10 +16,7 @@ namespace WisePBX.NET8.Models.SConnector_SP
                 .FromSqlInterpolated($"[dbo].[get_fb_comment] {ticket_id},{above_msg_id},{after_msg_id}")
                 .ToArray();
         }
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer(Environment.GetEnvironmentVariable("SconnConnectionString"));
-
-
+        
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<get_fb_comment_Result>(entity =>

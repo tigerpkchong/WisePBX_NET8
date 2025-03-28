@@ -14,11 +14,16 @@ namespace WisePBX.NET8.Controllers
         private readonly string strNoSuchRecord = "No such record.";
 
         private readonly string hostName;
-        
-        public FaxController(IConfiguration iConfig)
+
+        private readonly WiseEntities _wisedb;
+
+        public FaxController(IConfiguration iConfig, WiseEntities wiseEntities)
+            : base(wiseEntities)
         {
             hostName = iConfig.GetValue<string>("HostName") ?? "";
+            _wisedb = wiseEntities;
         }
+
         [HttpPost]
         [ActionName("GetCount")]
         public IActionResult GetCount([FromBody] JsonObject p)
@@ -69,8 +74,6 @@ namespace WisePBX.NET8.Controllers
             string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
             if (dnis == "" || agentId == -1) return Ok(new { result = "fail", details = strInvalidParameters });
 
-            WiseEntities _wisedb = new WiseEntities();
-
             var _mediaList = (from m in _wisedb.MediaCalls
                               where m.AgentID == agentId && m.DNIS == dnis && m.CallType == 8 &&
                               m.IsHandleFinish == handled
@@ -103,7 +106,7 @@ namespace WisePBX.NET8.Controllers
             int id = Convert.ToInt32((p["id"]??"-1").ToString());
             if (id == -1) return Ok(new { result = "fail", details = strInvalidParameters });
             string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
-            WiseEntities _wisedb = new WiseEntities();
+            
             MediaCall? _mediaCall = (from m in _wisedb.MediaCalls
                                     where m.CallID == id && (m.CallType == 8 || m.CallType == 13)
                                     select m).SingleOrDefault();

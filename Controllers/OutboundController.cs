@@ -16,11 +16,16 @@ namespace WisePBX.NET8.Controllers
         private readonly string strInvalidParameters = "Invalid Parameters.";
 
         private readonly string fileUploadPath;
-        public OutboundController(IConfiguration iConfig,IWebHostEnvironment ienvironment)
+
+        private readonly WiseEntities _wisedb;
+
+        public OutboundController(IConfiguration iConfig,IWebHostEnvironment ienvironment
+            , WiseEntities entities)
         {
             fileUploadPath = iConfig.GetValue<string>("FileUploadPath") ?? "";
             if(fileUploadPath=="")
                 fileUploadPath= ienvironment.ContentRootPath + "/Uploads";
+            _wisedb = entities;
         }
         [HttpPost]
         public IActionResult GetCallId([FromBody] dynamic p)
@@ -30,7 +35,6 @@ namespace WisePBX.NET8.Controllers
             int agentId = (p.agentId == null) ? -1 : Convert.ToInt32(p.agentId.Value);
             if (caseId == -1 || agentId == -1)
                 return Ok(new { result = strFail, details = strInvalidParameters });
-            WiseEntities _wisedb = new WiseEntities();
             int _callId = 0, _count = 0;
             do
             {
@@ -53,7 +57,6 @@ namespace WisePBX.NET8.Controllers
             int agentId = (p.agentId == null) ? -1 : Convert.ToInt32(p.agentId.Value);
             if (agentId == -1)
                 return Ok(new { result = strFail, details = strInvalidParameters });
-            WiseEntities _wisedb = new WiseEntities();
             var _objCase = new MediaCall_CaseID
             {
                 AgentId = agentId,

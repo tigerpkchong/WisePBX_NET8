@@ -9,10 +9,15 @@ namespace WisePBX.NET8.Controllers
     [ApiController]
     public class _MediaController : ControllerBase
     {
+        private readonly WiseEntities _wisedb;
+        public _MediaController(WiseEntities wiseEntities) 
+        {
+            _wisedb = wiseEntities;
+        }
+
         [HttpPost]
         public IActionResult GetCount(int callType, int agentId, string dnis, int handled)
         {
-            WiseEntities _wisedb = new WiseEntities();
             int _count = (from m in _wisedb.MediaCalls
                           where m.AgentID == agentId && m.DNIS == dnis && m.IsHandleFinish == handled
                           && m.CallType == callType
@@ -41,8 +46,6 @@ namespace WisePBX.NET8.Controllers
         [HttpPost]
         public IActionResult AssignAgent(int callType, List<int> mediaIds, int assignTo, int updatedBy)
         {
-            WiseEntities _wisedb = new WiseEntities();
-
             string details = CheckHandled(_wisedb, callType, mediaIds);
             if (details != "")
                 return Ok(new { result = "fail", details });
@@ -78,7 +81,6 @@ namespace WisePBX.NET8.Controllers
         [HttpPost]
         public IActionResult SetHandled(int callType, int mediaId, string caseNo, int updatedBy)
         {
-            WiseEntities _wisedb = new WiseEntities();
             MediaCall? _medialCall = (from m in _wisedb.MediaCalls
                                      where m.CallID == mediaId && m.CallType == callType
                                      select m).SingleOrDefault();
@@ -107,7 +109,6 @@ namespace WisePBX.NET8.Controllers
         [HttpPost]
         public IActionResult SetRead(int callType, int mediaId, int updatedBy)
         {
-            WiseEntities _wisedb = new WiseEntities();
             MediaCall? _medialCall = (from m in _wisedb.MediaCalls
                                      where m.CallID == mediaId && m.CallType == callType
                                      select m).SingleOrDefault();
@@ -138,7 +139,6 @@ namespace WisePBX.NET8.Controllers
         [HttpPost]
         public IActionResult SetRead(int callType, int[] mediaIds, int updatedBy)
         {
-            WiseEntities _wisedb = new WiseEntities();
             var _medialList = (from m in _wisedb.MediaCalls
                                            where mediaIds.Contains(m.CallID)
                                            && m.CallType == callType
@@ -171,7 +171,6 @@ namespace WisePBX.NET8.Controllers
         [HttpPost]
         public IActionResult GetCallid(int callType, int mediaCaseID, int agentID)
         {
-            WiseEntities _wisedb = new WiseEntities();
             MediaCall? _m;
             do
             {

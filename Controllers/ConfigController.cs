@@ -12,12 +12,20 @@ namespace WisePBX.NET8.Controllers
     [ApiController]
     public class ConfigController : ControllerBase
     {
+        private readonly WiseEntities _wisedb;
+        private readonly WiseSPEntities _wiseSPdb;
+
+        public ConfigController(WiseEntities entities, WiseSPEntities entitiesSP) 
+        {
+            _wisedb = entities;
+            _wiseSPdb = entitiesSP;
+        }
+
         [HttpPost]
         public IActionResult GetServiceList([FromBody] JsonObject p)
         {
             try
             {
-                WiseEntities _wisedb = new WiseEntities();
                 List<int> _serviceIds = (from s in _wisedb.Service_ACDGroups select s.ServiceID).ToList();
 
                 var data = (from i in _wisedb.Services
@@ -42,7 +50,6 @@ namespace WisePBX.NET8.Controllers
             try
             {
                 int serviceId = Convert.ToInt32((p["serviceId"]??"-1").ToString());
-                WiseEntities _wisedb = new WiseEntities();
                 var data = (from s in _wisedb.Services
                             join ag in _wisedb.Service_ACDGroups on s.ServiceID equals ag.ServiceID
                             join g in _wisedb.ACDGroups on ag.ACDGroupID equals g.AcdGroupID
@@ -73,7 +80,6 @@ namespace WisePBX.NET8.Controllers
             {
                 int agentId = (p == null) ? -1 : Convert.ToInt32((p["agentId"]??"-1").ToString());
 
-                WiseEntities _wisedb = new WiseEntities();
                 var data = (from i in _wisedb.AgentInfos
                             where (agentId == -1 || i.AgentID == agentId)
                             orderby i.AgentID
@@ -99,8 +105,7 @@ namespace WisePBX.NET8.Controllers
                 if (p["agentIds"] == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
 
                 List<int>? agentIds = p["agentIds"]?.GetValue<List<int>>() ?? [];
-                WiseEntities _wisedb = new WiseEntities();
-
+                
                 var data = (from i in _wisedb.AgentInfos
                             where agentIds.Contains(i.AgentID)
                             && (i.LevelID == 3 || i.LevelID == 4)
@@ -128,7 +133,6 @@ namespace WisePBX.NET8.Controllers
                 int agentId = Convert.ToInt32((p["agentId"]??"-1").ToString());
                 if (agentId == -1) return Ok(new { result = "fail", details = "Invalid Parameters." });
 
-                WiseEntities _wisedb = new WiseEntities();
                 var info = (from i in _wisedb.AgentInfos
                             where i.AgentID == agentId
                             select i
@@ -155,7 +159,6 @@ namespace WisePBX.NET8.Controllers
                 int groupId = Convert.ToInt32((p["groupId"] ?? "-1").ToString());
                 if (groupId == -1) return Ok(new { result = "fail", details = "Invalid Parameters." });
 
-                WiseEntities _wisedb = new WiseEntities();
                 string? _grpType = (from a in _wisedb.Service_ACDGroups
                                    where a.ServiceID == serviceId &&
                                    a.ACDGroupID == groupId
@@ -218,7 +221,6 @@ namespace WisePBX.NET8.Controllers
             
             try
             {
-                WiseEntities _wisedb = new WiseEntities();
                 if (p["agentId"] == null)
                 {
                     var _list = (from a in _wisedb.ACDGroups orderby a.AcdGroupID select a).ToList();
@@ -261,7 +263,6 @@ namespace WisePBX.NET8.Controllers
             try
             {
 
-                WiseEntities _wisedb = new WiseEntities();
                 bool isAgent = (from a in _wisedb.AgentInfos where a.AgentID == agentId select a).Any();
                 if (!isAgent) return Ok(new { result = "fail", details = "No such agent." });
 
@@ -320,8 +321,6 @@ namespace WisePBX.NET8.Controllers
 
             try
             {
-                WiseEntities _wisedb = new WiseEntities();
-
                 bool isAgent = (from a in _wisedb.AgentInfos where a.AgentID == agentId select a).Any();
                 if (!isAgent) return Ok(new { result = "fail", details = "No such agent." });
 
@@ -358,8 +357,6 @@ namespace WisePBX.NET8.Controllers
 
             try
             {
-                WiseEntities _wisedb = new WiseEntities();
-
                 bool isAgent = (from a in _wisedb.AgentInfos where a.AgentID == agentId select a).Any();
                 if (!isAgent) return Ok(new { result = "fail", details = "No such agent." });
 
@@ -386,8 +383,7 @@ namespace WisePBX.NET8.Controllers
         {
             try
             {
-                WiseEntities _wisedb = new WiseEntities();
-                List<SP_Dashboard_Data_Result> data = _wisedb.SP_Dashboard_Data().ToList();
+                List<SP_Dashboard_Data_Result> data = _wiseSPdb.SP_Dashboard_Data().ToList();
                 var inbound_call = data.Select(d => d.inbound_call);
                 var inbound_vm = data.Select(d => d.inbound_vm);
                 var inbound_email = data.Select(d => d.inbound_email);
@@ -443,8 +439,7 @@ namespace WisePBX.NET8.Controllers
                 int daysBefore = Convert.ToInt32((p["daysBefore"]??"-1").ToString());
                 if (daysBefore == -1) return Ok(new { result = "fail", details = "Invalid Parameters." });
 
-                WiseEntities _wisedb = new WiseEntities();
-                var data = _wisedb.SP_Dashboard_Data_Agent(daysBefore).ToList();
+                var data = _wiseSPdb.SP_Dashboard_Data_Agent(daysBefore).ToList();
                 return Ok(new { result = "success", data });
             }
             catch (Exception e)
@@ -463,8 +458,7 @@ namespace WisePBX.NET8.Controllers
                 DateTime reportDate = Convert.ToDateTime(p["reportDate"]?.ToString());
 
 
-                WiseEntities _wisedb = new WiseEntities();
-                var data = _wisedb.SP_wallboard_count(reportDate);
+                var data = _wiseSPdb.SP_wallboard_count(reportDate);
                 return Ok(new { result = "success", data });
             }
             catch (Exception e)

@@ -32,13 +32,18 @@ namespace WisePBX.NET8.Controllers
         private readonly string hostDrive;
         private readonly string hostName;
         private readonly string fileUploadPath;
-        public EmailController(IConfiguration iConfig, IWebHostEnvironment ienvironment)
+
+        private readonly WiseEntities _wisedb;
+        public EmailController(IConfiguration iConfig, IWebHostEnvironment ienvironment
+            , WiseEntities wiseEntities) 
+            : base( wiseEntities)
         {
             hostDrive = iConfig.GetValue<string>("hostDrive") ?? "";
             hostName = iConfig.GetValue<string>("HostName") ?? "";
             fileUploadPath = iConfig.GetValue<string>("FileUploadPath") ?? "";
             if (fileUploadPath == "")
                 fileUploadPath = ienvironment.ContentRootPath + "/Uploads";
+            _wisedb = wiseEntities;
         }
 
         [HttpPost]
@@ -51,7 +56,6 @@ namespace WisePBX.NET8.Controllers
 
             if (dnis == "" || agentId <= 0) return Ok(new { result = strFail, details = strInvalidParameters });
 
-            WiseEntities _wisedb = new WiseEntities();
             var _mediaList = (from m in _wisedb.MediaCalls
                               where m.AgentID == agentId && m.DNIS == dnis && m.IsHandleFinish == handled
                               && m.CallType == 6
@@ -98,7 +102,6 @@ namespace WisePBX.NET8.Controllers
             int id =Convert.ToInt32((p["id"]??"0").ToString());
             if (id == 0) return Ok(new { result = strFail, details = strInvalidParameters });
 
-            WiseEntities _wisedb = new WiseEntities();
             MediaCall? _mediaCall = (from m in _wisedb.MediaCalls
                                     where m.CallID == id && (m.CallType == 6 || m.CallType == 12)
                                     select m).SingleOrDefault();
@@ -288,7 +291,6 @@ namespace WisePBX.NET8.Controllers
                 string emailAddress = (p["emailAddress"] ?? "").ToString();
 
                 List<EmailSetting>? _setting=null;
-                WiseEntities _wisedb = new WiseEntities();
                 if (emailAddress == "")
                     _setting =
                     (from m in _wisedb.EmailSettings
@@ -340,7 +342,6 @@ namespace WisePBX.NET8.Controllers
                 string fullName = (p["fullName"] ?? "").ToString(); 
                 string title = (p["title"] ?? "").ToString();
 
-                WiseEntities _wisedb = new WiseEntities();
                 var _setting = (from m in _wisedb.EmailSettings
                                 where m.ProjectName == projectName
                                 && m.EmailAddress == emailAddress
@@ -424,7 +425,6 @@ namespace WisePBX.NET8.Controllers
                 if (agentId == -1)
                     return Ok(new { result = strFail, details = strInvalidParameters });
 
-                WiseEntities _wisedb = new WiseEntities();
                 var _setting = (from m in _wisedb.EmailSettings
                                 where m.ProjectName == projectName && m.EmailType == emailType
                                 && m.EmailAddress == emailAddress && m.Valid == "Y"
@@ -468,7 +468,6 @@ namespace WisePBX.NET8.Controllers
 
 
 
-                WiseEntities _wisedb = new WiseEntities();
                 var _list =
                     (from m in _wisedb.MediaCalls
                      join l in _wisedb.MediaCall_Action_Logs

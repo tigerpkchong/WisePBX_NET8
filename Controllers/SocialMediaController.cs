@@ -20,16 +20,23 @@ namespace WisePBX.NET8.Controllers
         private readonly string strFail = "fail";
         private readonly string strError = "error";
         private readonly string strInvalidParameters = "Invalid Parameters.";
-        
+
+        private readonly WiseEntities _wiseDB;
+        private readonly SConnectorEntities _sconnDB;
+        private readonly SConnectorSPEntities _sconnSPDB;
         private readonly string hostAddress;
         private readonly string fileUploadPath;
-        public SocialMediaController(IConfiguration iConfig, IWebHostEnvironment ienvironment)
+        public SocialMediaController(IConfiguration iConfig, IWebHostEnvironment ienv, 
+            WiseEntities wEntities,
+            SConnectorEntities sEntities, SConnectorSPEntities sEntitiesSP)
         {
-            
+            _wiseDB = wEntities;
+            _sconnDB = sEntities;
+            _sconnSPDB = sEntitiesSP;
             hostAddress = iConfig.GetValue<string>("HostAddress") ?? "";
             fileUploadPath = iConfig.GetValue<string>("FileUploadPath") ?? "";
             if (fileUploadPath == "")
-                fileUploadPath = ienvironment.ContentRootPath + "/Uploads";
+                fileUploadPath = ienv.ContentRootPath + "/Uploads";
         }
 
         public partial record UploadForm
@@ -101,7 +108,6 @@ namespace WisePBX.NET8.Controllers
                 string companyCode = (p["companyCode"] ?? "").ToString();
                 long ticketId = Convert.ToInt64((p["ticketId"] ?? "0").ToString());
 
-                SConnectorEntities _sconnDB = new SConnectorEntities();
                 string? _time = (from m in _sconnDB.SC_Tickets
                                  where m.enduser_id == userId && m.entry == entry
                                  && m.ticket_id == ticketId && m.company_code == companyCode
@@ -131,7 +137,6 @@ namespace WisePBX.NET8.Controllers
             string entry = (p["entry"] ?? "").ToString();
             string companyCode = (p["companyCode"] ?? "").ToString();
 
-            SConnectorEntities _sconnDB = new SConnectorEntities();
             var _r = (from m in _sconnDB.SC_Tickets
                       where m.enduser_id == userId && m.entry == entry && m.status_id == 2
                       && m.company_code == companyCode
@@ -151,7 +156,6 @@ namespace WisePBX.NET8.Controllers
             string companyName = (p["companyName"] ?? "").ToString();
             if (companyName == "") return Ok(new { result = strError, details = strInvalidParameters });
 
-            SConnectorEntities _sconnDB = new SConnectorEntities();
             var _r = (from m in _sconnDB.SCRM_CannedFiles
                       where m.CompanyName == companyName && m.Active == true
                       orderby m.FileName
@@ -174,7 +178,6 @@ namespace WisePBX.NET8.Controllers
             string companyName = (p["companyName"] ?? "").ToString();
             if (companyName == "") return Ok(new { result = strError, details = strInvalidParameters });
 
-            SConnectorEntities _sconnDB = new SConnectorEntities();
             var _r = (from m in _sconnDB.SCRM_CannedMsgs
                       where m.CompanyName == companyName && m.Active == true
                       orderby m.MsgID
@@ -194,8 +197,7 @@ namespace WisePBX.NET8.Controllers
             int number = Convert.ToInt32((p["number"]??"0").ToString());
 
             var baseUri = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
-            SConnectorSPEntities _sconnDB = new SConnectorSPEntities();
-            var _r = _sconnDB.get_fb_comment(ticketId, aboveMsgId, afterMsgId).ToList();
+            var _r = _sconnSPDB.get_fb_comment(ticketId, aboveMsgId, afterMsgId).ToList();
             _r = _r.Select(x =>
             {
                 if (x.msg_object_path != null)
@@ -219,7 +221,6 @@ namespace WisePBX.NET8.Controllers
             string endUserId = (p["endUserId"] ?? "").ToString();
             if (endUserId == "") return Ok(new { result = strError, details = strInvalidParameters });
 
-            SConnectorEntities _sconnDB = new SConnectorEntities();
             var _r = (from m in _sconnDB.SC_Tickets
                       where m.entry == "fb_comment"
                       && m.enduser_id == endUserId && m.company_code == companyCode
@@ -245,7 +246,6 @@ namespace WisePBX.NET8.Controllers
             int number = Convert.ToInt32((p["number"] ?? "0").ToString());
 
             var baseUri = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
-            SConnectorEntities _sconnDB = new SConnectorEntities();
             var _r = (from m in _sconnDB.SC_MsgHistories
                       where m.ticket_id == ticketId && m.sc_comment_id == CommentId
                       orderby m.sent_time
@@ -269,7 +269,6 @@ namespace WisePBX.NET8.Controllers
             if (p == null) return Ok(new { result = strError, details = strInvalidParameters });
             long ticketId = Convert.ToInt64((p["ticketId"] ?? "0").ToString());
             if (ticketId == 0) return Ok(new { result = strError, details = strInvalidParameters });
-            SConnectorEntities _sconnDB = new SConnectorEntities();
             var _start_time = (from m in _sconnDB.SC_Tickets
                                where m.ticket_id == ticketId
                                select m.start_time).SingleOrDefault();
@@ -307,9 +306,8 @@ namespace WisePBX.NET8.Controllers
                 phoneNo2 = (phoneNo.Length <= 8) ? "852" + phoneNo : phoneNo;            //Emma
             }
 
-            SConnectorEntities _dbSonn = new SConnectorEntities();
-            var data = (from t in _dbSonn.SC_Tickets
-                        join m in _dbSonn.SC_MsgHistories on t.ticket_id equals m.ticket_id
+            var data = (from t in _sconnDB.SC_Tickets
+                        join m in _sconnDB.SC_MsgHistories on t.ticket_id equals m.ticket_id
                         where t.entry == "whatsapp" && t.company_code == companyCode
                         && (phoneNo1 == "" || t.enduser_id == phoneNo1 || phoneNo2 == "" || t.enduser_id == phoneNo2)
                         && DateTime.ParseExact(m.sent_time,"yyyy-MM-dd", CultureInfo.InvariantCulture) >= startDate
@@ -324,8 +322,7 @@ namespace WisePBX.NET8.Controllers
             if (p == null) return Ok(new { result = strError, details = strInvalidParameters });
             int[]? agentIds = (p["agentIds"] == null) ? null : p["agentIds"]?.GetValue<int[]>();
             if (agentIds == null) return Ok(new { result = strError, details = strInvalidParameters });
-            WiseEntities _wiseDB = new WiseEntities();
-
+            
             var _r = (from m in _wiseDB.AgentInfos
                       where agentIds.Contains(m.AgentID)
                       select new { m.AgentID, m.AgentName }).ToList();
@@ -339,8 +336,6 @@ namespace WisePBX.NET8.Controllers
 
             int sellerId = Convert.ToInt32((data["SellerID"]??"0").ToString());
             string password = (data["Password"] ?? "").ToString();
-
-            WiseEntities _wiseDB = new WiseEntities();
 
             var _r = (from m in _wiseDB.AgentInfos
                       where m.AgentID == sellerId && (m.Password??"").Substring(0, 3000) == password
