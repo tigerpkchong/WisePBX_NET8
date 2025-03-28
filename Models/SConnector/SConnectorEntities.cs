@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using WisePBX.NET8.Models.Wise;
 
 namespace WisePBX.NET8.Models.SConnector;
 
@@ -10,11 +9,11 @@ public partial class SConnectorEntities : DbContext
     public SConnectorEntities()
     {
     }
-
     public SConnectorEntities(DbContextOptions<SConnectorEntities> options)
         : base(options)
     {
     }
+
     public virtual DbSet<SCRM_CannedFile> SCRM_CannedFiles { get; set; }
 
     public virtual DbSet<SCRM_CannedMsg> SCRM_CannedMsgs { get; set; }
@@ -28,8 +27,7 @@ public partial class SConnectorEntities : DbContext
     public virtual DbSet<SC_Ticket> SC_Tickets { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Data Source=172.17.7.40;Database=SConnector;Integrated Security=false;User ID=sa;Password=+Epro_Demo+;TrustServerCertificate=true;");
+        => optionsBuilder.UseSqlServer(Environment.GetEnvironmentVariable("SconnConnectionString"));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

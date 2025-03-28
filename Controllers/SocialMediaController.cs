@@ -74,8 +74,7 @@ namespace WisePBX.NET8.Controllers
                             ContentType = _file.ContentType,
                             FileName = _file.FileName,
                             FilePath = _filePath,
-                            FileUrl = webUrl + "/Uploads/" + _dateFolder + "/" + ticketId + "/" + _file.FileName
-
+                            FileUrl = webUrl + "/Uploads/" + _fileFolder + "/" + _file.FileName
                         });
                     }
                 }

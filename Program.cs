@@ -1,5 +1,7 @@
+using Microsoft.EntityFrameworkCore;
 using System.Net;
-
+using System;
+using WisePBX.NET8.Models.SConnector;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -9,7 +11,6 @@ builder.Services.AddControllers()
     {
         options.JsonSerializerOptions.PropertyNamingPolicy = null;
     });
-
 
 var app = builder.Build();
 
