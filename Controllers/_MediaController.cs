@@ -20,7 +20,7 @@ namespace WisePBX.NET8.Controllers
             return Ok(new { result = "success", data = _count });
         }
 
-        private string CheckHandled(WiseEntities _wisedb, int callType, List<int> mediaIds)
+        private static string CheckHandled(WiseEntities _wisedb, int callType, List<int> mediaIds)
         {
             List<MediaCall> _medialCallList = (from m in _wisedb.MediaCalls
                                                where mediaIds.Contains(m.CallID) && m.CallType == callType //&& m.AgentID != 0

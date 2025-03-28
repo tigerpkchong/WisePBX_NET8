@@ -50,7 +50,10 @@ namespace WisePBX.NET8.Controllers
 
                 string _dateFolder = DateTime.Today.ToString("yyyyMMdd");
                 string _fillFolder = Path.Combine(fileUploadPath, _dateFolder, ticketId);
-                if (!Directory.Exists(_fillFolder)) Directory.CreateDirectory(_fillFolder);
+                if (_fillFolder.StartsWith(Path.GetFullPath(_fillFolder), StringComparison.Ordinal))
+                {
+                    Directory.CreateDirectory(_fillFolder);
+                }
                 string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
 
                 var data = new List<dynamic>();

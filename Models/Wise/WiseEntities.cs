@@ -76,9 +76,7 @@ public partial class WiseEntities : DbContext
     public virtual DbSet<Voicemail> Voicemails { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Data Source=172.17.7.40;Database=Wise;Integrated Security=false;User ID=sa;Password=+Epro_Demo+;TrustServerCertificate=true;");
-
+    => optionsBuilder.UseSqlServer(Environment.GetEnvironmentVariable("WiseConnectionString"));
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<SP_Dashboard_Data_Agent_Result>(entity =>
