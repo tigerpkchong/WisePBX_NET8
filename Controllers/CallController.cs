@@ -4,6 +4,7 @@ using WisePBX.NET8.Models.Wise;
 using System.Text.Json;
 using Newtonsoft.Json;
 using System.Text.Json.Nodes;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 namespace WisePBX.NET8.Controllers
 {
     [Route("api/[controller]/[action]")]
@@ -65,8 +66,8 @@ namespace WisePBX.NET8.Controllers
             if (p["startDate"] == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
             if (p["endDate"] == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
             
-            DateTime startDate = Convert.ToDateTime(p["startDate"].ToString());
-            DateTime endDate = Convert.ToDateTime(p["endDate"].ToString()).AddDays(1);
+            DateTime startDate = Convert.ToDateTime((p["startDate"]??"").ToString());
+            DateTime endDate = Convert.ToDateTime((p["endDate"] ?? "").ToString()).AddDays(1);
             
             int agentId = Convert.ToInt32((p["agentId"]??"-1").ToString());
             string phoneNo = (p["phoneNo"]??"").ToString();
@@ -119,8 +120,8 @@ namespace WisePBX.NET8.Controllers
                 if (p["endDate"] == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
 
 
-                DateTime startDate = Convert.ToDateTime(p["startDate"].ToString());
-                DateTime endDate = Convert.ToDateTime(p["endDate"].ToString()).AddDays(1);
+                DateTime startDate = Convert.ToDateTime((p["startDate"] ?? "").ToString());
+                DateTime endDate = Convert.ToDateTime((p["endDate"] ?? "").ToString()).AddDays(1);
 
                 int agentId = Convert.ToInt32((p["agentId"]??"-1").ToString());
                 string phoneNo = (p["phoneNo"]??"").ToString();
@@ -130,88 +131,48 @@ namespace WisePBX.NET8.Controllers
                 string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
 
                 WiseEntities _wisedb = new WiseEntities();
-                dynamic? data = null;
-                if (agentId == -1)
-                {
-                    data = (from c in _wisedb.Calls
-                            join v in _wisedb.Voicelogs on c.CallID equals v.CallID
-                            where (c.Calltype >= 1 && c.Calltype <= 5)
-                            && v.Time_stamp >= startDate && v.Time_stamp < endDate
-                            && (phoneNo == "" || c.ANI == phoneNo || c.ANI == phoneNo)
-                            orderby v.SerialID
-                            select new
-                            {
-                                c.CallID,
-                                FilePath = v.Filepath,
-                                FileUrl = v.Filepath.Replace(@"\", @"/").Replace("//" + hostName + "/", webUrl + "/"),
-                                TimeStamp = c.Begintime,
-                                c.DNIS,
-                                c.ANI,
-                                Duration = c.Talktime,
-                                dStaffNo = (c.dDeviceType == 3) ? c.oDeviceID.ToString() : "",
-                                oStaffNo = (c.oDeviceType == 3) ? c.oDeviceID.ToString() : "",
-                                bOutbound = (c.Calltype == 1) ? "Outbound" : "",
-                                bInbound = (c.Calltype == 2 || (c.Calltype == 4 && c.dDeviceType == 3)) ? "Inbound" : "",
-                                bConference = (c.Calltype == 5) ? "Conference" : "",
-                                bTransfer = (c.Calltype == 4 && c.dDeviceType != 3) ? "Transfer" : "",
-                                bInterComm = (c.Calltype == 3) ? "InterComm" : "",
-                            }).AsEnumerable().Select(x => new 
-                            {
-                                CallId = x.CallID,
-                                CallType = x.bOutbound + x.bInbound + x.bConference + x.bTransfer + x.bInterComm,
-                                FilePath = x.FilePath,
-                                FileName = x.FilePath.Substring(x.FilePath.LastIndexOf('\\') + 1),
-                                FileUrl = x.FileUrl,
-                                TimeStamp = x.TimeStamp,
-                                PhoneNo = (x.bInterComm != "") ? "" : (x.bOutbound != "") ? x.DNIS : x.ANI,
-                                StaffNo = x.dStaffNo + ((x.dStaffNo != "" && x.oStaffNo != "") ? "," : "") + x.oStaffNo,
-                                Duration = x.Duration,
+                
+                var data = (from c in _wisedb.Calls
+                        join v in _wisedb.Voicelogs on c.CallID equals v.CallID
+                        where (c.Calltype >= 1 && c.Calltype <= 5)
+                        && v.Time_stamp >= startDate && v.Time_stamp < endDate
+                        && (phoneNo == "" || c.ANI == phoneNo || c.ANI == phoneNo)
+                        && (agentId == -1 || ((c.dDeviceType == 3 && c.dDeviceID == agentId) || (c.oDeviceType == 3 && c.oDeviceID == agentId)))
+                        orderby v.SerialID
+                        select new
+                        {
+                            c.CallID,
+                            FilePath = v.Filepath,
+                            FileUrl = v.Filepath.Replace(@"\", @"/").Replace("//" + hostName + "/", webUrl + "/"),
+                            TimeStamp = c.Begintime,
+                            c.DNIS,
+                            c.ANI,
+                                
+                            Duration = c.Talktime,
+                            dStaffNo = (c.dDeviceType == 3) ? c.oDeviceID.ToString() : "",
+                            oStaffNo = (c.oDeviceType == 3) ? c.oDeviceID.ToString() : "",
+                            bOutbound = (c.Calltype == 1) ? "Outbound" : "",
+                            bInbound = (c.Calltype == 2 || (c.Calltype == 4 && c.dDeviceType == 3)) ? "Inbound" : "",
+                            bConference = (c.Calltype == 5) ? "Conference" : "",
+                            bTransfer = (c.Calltype == 4 && c.dDeviceType != 3) ? "Transfer" : "",
+                            bInterComm = (c.Calltype == 3) ? "InterComm" : "",
+                            PhoneNo = (c.Calltype == 3)? "" : c.ANI,
+                        }).AsEnumerable().Select(x => new 
+                        {
+                            CallId = x.CallID,
+                            CallType = x.bOutbound + x.bInbound + x.bConference + x.bTransfer + x.bInterComm,
+                            FilePath = x.FilePath,
+                            FileName = x.FilePath.Substring(x.FilePath.LastIndexOf('\\') + 1),
+                            FileUrl = x.FileUrl,
+                            TimeStamp = x.TimeStamp,
+                            PhoneNo = x.bOutbound != ""? x.DNIS : x.PhoneNo ,
+                            StaffNo = x.dStaffNo + ((x.dStaffNo != "" && x.oStaffNo != "") ? "," : "") + x.oStaffNo,
+                            Duration = x.Duration,
 
-                            }).ToList();
-                }
-                else
-                {
-                    data = (from c in _wisedb.Calls
-                            join m in _wisedb.CallMemGrps on new { c.Calltype, c.CallID, DeviceType = 3, DeviceID = agentId } equals new { Calltype = 5, m.CallID, m.DeviceType, m.DeviceID }
-                            into gg
-                            from m in gg.DefaultIfEmpty()
-                            join v in _wisedb.Voicelogs on c.CallID equals v.CallID
-                            where ((c.Calltype >= 1 && c.Calltype <= 4) || (c.Calltype == 5 && m != null))
-                            && v.Time_stamp >= startDate && v.Time_stamp < endDate
-                            && ((c.dDeviceType == 3 && c.dDeviceID == agentId) || (c.oDeviceType == 3 && c.oDeviceID == agentId))
-                            && (phoneNo == "" || c.ANI == phoneNo || c.DNIS == phoneNo)
-                            orderby v.SerialID
-                            select new
-                            {
-                                c.CallID,
-                                FilePath = v.Filepath,
-                                FileUrl = v.Filepath.Replace(@"\", @"/").Replace("//" + hostName + "/", webUrl + "/"),
-                                TimeStamp = c.Begintime,
-                                c.DNIS,
-                                c.ANI,
-                                Duration = c.Talktime,
-                                bOutbound = (c.Calltype == 1) ? "Outbound" : "",
-                                bInbound = (c.Calltype == 2 || (c.Calltype == 4 && c.dDeviceType == 3)) ? "Inbound" : "",
-                                bConference = (c.Calltype == 5) ? "Conference" : "",
-                                bTransfer = (c.Calltype == 4 && c.dDeviceType != 3) ? "Transfer" : "",
-                                bInterComm = (c.Calltype == 3) ? "InterComm" : "",
-                                dStaffNo = (c.dDeviceType == 3) ? c.dDeviceID.ToString() : "",
-                                oStaffNo = (c.oDeviceType == 3) ? c.oDeviceID.ToString() : "",
-                            }).AsEnumerable().Select(x => new 
-                            {
-                                CallId = x.CallID,
-                                CallType = x.bOutbound + x.bInbound + x.bConference + x.bTransfer + x.bInterComm,
-                                FilePath = x.FilePath,
-                                FileName = x.FilePath.Substring(x.FilePath.LastIndexOf('\\') + 1),
-                                FileUrl = x.FileUrl,
-                                TimeStamp = x.TimeStamp,
-                                PhoneNo = (x.bInterComm != "") ? "" : ((x.bOutbound != "") ? x.DNIS : x.ANI),
-                                StaffNo = x.dStaffNo + ((x.dStaffNo != "" && x.oStaffNo != "") ? "," : "") + x.oStaffNo,
-                                Duration = x.Duration,
-
-                            }).ToList();
-                }
-                if (data.Count() == 0) return Ok(new { result = "fail", details = "No such record" });
+                        }).ToList();
+                
+                
+                if (data.Count == 0) return Ok(new { result = "fail", details = "No such record" });
                 return Ok(new { result = "success", data });
             }
             catch (Exception e)
@@ -226,32 +187,33 @@ namespace WisePBX.NET8.Controllers
             try
             {
                 if (p == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
-
+                
                 DateTime startDate = (p["startDate"] == null) ? DateTime.Today.AddYears(-1) : Convert.ToDateTime(p["startDate"].ToString());
-                DateTime endDate = (p["endDate"] == null) ? DateTime.Today.AddDays(1) : (Convert.ToDateTime(p["endDate"].ToString())).AddDays(1);
+                DateTime endDate = (p["endDate"] == null) ? DateTime.Today.AddDays(1) : (Convert.ToDateTime((p["endDate"]??"").ToString())).AddDays(1);
                 int serviceId = (p["serviceId"] == null) ? -1 : Convert.ToInt32((p["serviceId"]??"-1").ToString());
 
-                string[] agentId = { };
+                string[] agentId = []; 
                 if (p["agentId"] != null)
                 {
-                    if (p["agentId"]?.GetType().Name == "JArray")
-                        agentId = p["agentId"].GetValue<string[]>();
+                    if (p!["agentId"]!.GetType().Name == "JArray")
+                        agentId = (p!["agentId"]!).GetValue<string[]>();
                     else
-                        agentId = new string[] { (p["agentId"] ?? "-1").ToString() };
+                        agentId =  [p!["agentId"]!.ToString()];
+                    
                 }
-                agentId = agentId.Select(m => "|" + m + "|").ToArray();
+                agentId = (agentId ??[]).Select(m => "|" + m + "|").ToArray();
 
                 string phoneNo = (p["phoneNo"] ?? "").ToString();
                 int callType = Convert.ToInt32((p["callType"] ?? "-1").ToString());
                 string ani = (p["ani"] ?? "").ToString();
                 string dnis = (p["dnis"] ?? "").ToString();
-                int[] callId = { };
+                int[]? callId = [];
                 if (p["callId"] != null)
                 {
                     if (p["callId"]?.GetType().Name == "JArray")
-                        callId = p["callId"].GetValue<int[]>();
+                        callId = p!["callId"]!.GetValue<int[]>();
                     else
-                        callId = new int[] {p["callId"].GetValue<int>() };
+                        callId = [p!["callId"]!.GetValue<int>()];
                 }
                 if (phoneNo != "" && phoneNo.Length < 8) return Ok(new { result = "fail", details = "Invalid Parameters." });
 
@@ -264,12 +226,10 @@ namespace WisePBX.NET8.Controllers
                          into ps
                          from o in ps.DefaultIfEmpty()
                          where (v.CallType >= 1 && v.CallType <= 5)
-                         && (v.Begintime >= startDate)
-                         && (v.Begintime < endDate)
+                         && (v.Begintime >= startDate) && (v.Begintime < endDate)
                          && (serviceId == -1 || v.ServiceID == serviceId || (v.ServiceID == 0 && v.CallType == 3))
                          && (callType == -1 || v.CallType == callType)
                          && (phoneNo == "" || (v.PhoneNo??"").Contains(phoneNo))
-                         //&& (agentId == "" || v.AgentList.Contains(agentId))
                          && (!agentId.Any() || agentId.Any(a => (v.AgentList??"").Contains(a)))
                          && (ani == "" || v.ANI == ani)
                          && (dnis == "" || v.DNIS == dnis)
@@ -303,7 +263,7 @@ namespace WisePBX.NET8.Controllers
                         x.VoiceFiles.Add(_voiceFile);
                     });
                 });
-
+                
                 if (data.Count == 0) return Ok(new { result = "fail", details = "No such record" });
                 return Ok(new { result = "success", data });
             }

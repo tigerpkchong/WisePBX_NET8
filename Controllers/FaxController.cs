@@ -11,25 +11,21 @@ namespace WisePBX.NET8.Controllers
     public class FaxController : _MediaController
     {
         private readonly IConfiguration configuration;
-        private string hostDrive;
-        private string hostName;
-        private string hostAddress;
+        private readonly string hostName;
         
         public FaxController(IConfiguration iConfig)
         {
             configuration = iConfig;
-            hostDrive = configuration.GetValue<string>("hostDrive") ?? "";
             hostName = configuration.GetValue<string>("HostName") ?? "";
-            hostAddress = configuration.GetValue<string>("HostAddress") ?? "";
         }
         [HttpPost]
         [ActionName("GetCount")]
-        public IActionResult GetCount([FromBody] dynamic p)
+        public IActionResult GetCount([FromBody] JsonObject p)
         {
             if (p == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
-            string dnis = (p.dnis == null) ? "" : p.dnis.Value;
-            int agentId = (p.agentId == null) ? -1 : Convert.ToInt32(p.agentId.Value);
-            int handled = (p.handled == null) ? 0 : Convert.ToInt32(p.handled.Value);
+            string dnis = (p["dnis"] ?? "").ToString();
+            int agentId = Convert.ToInt32(p["agentId"] ?? "-1");
+            int handled = Convert.ToInt32(p["handled"] ?? "0");
 
             if (dnis == "" || agentId == -1) return Ok(new { result = "fail", details = "Invalid Parameters." });
 
@@ -38,11 +34,11 @@ namespace WisePBX.NET8.Controllers
 
         [HttpPost]
         [ActionName("SetHandled")]
-        public IActionResult SetHandled([FromBody] dynamic p)
+        public IActionResult SetHandled([FromBody] JsonObject p)
         {
-            int mediaId = (p.mediaId == null) ? 0 : Convert.ToInt32(p.mediaId.Value);
-            string caseNo = (p.caseNo == null) ? "0" : Convert.ToString(p.caseNo.Value);
-            int updatedBy = (p.updatedBy == null) ? 0 : Convert.ToInt32(p.updatedBy.Value);
+            int mediaId = Convert.ToInt32(p["mediaId"] ?? "0");
+            string caseNo = (p["caseNo"] ?? "0").ToString();
+            int updatedBy = Convert.ToInt32(p["updatedBy"] ?? "0");
             if (mediaId == 0) return Ok(new { result = "fail", details = "Invalid Parameters." });
 
             return base.SetHandled(8, mediaId, caseNo, updatedBy);
@@ -50,11 +46,11 @@ namespace WisePBX.NET8.Controllers
 
         [HttpPost]
         [ActionName("AssignAgent")]
-        public IActionResult AssignAgent([FromBody] dynamic p)
+        public IActionResult AssignAgent([FromBody] JsonObject p)
         {
-            List<int> mediaIds = ((JArray)p.mediaIds).ToObject<List<int>>();
-            int assignTo = (p.assignTo == null) ? -1 : Convert.ToInt32(p.assignTo.Value);
-            int updatedBy = (p.updatedBy == null) ? -1 : Convert.ToInt32(p.updatedBy.Value);
+            List<int>? mediaIds = p["mediaIds"]?.GetValue<List<int>>();
+            int assignTo = Convert.ToInt32(p["assignTo"] ?? "-1");
+            int updatedBy = Convert.ToInt32(p["updatedBy"] ?? "-1");
             if (mediaIds == null || assignTo == -1 || updatedBy == -1)
                 return Ok(new { result = "fail", details = "Invalid Parameters." });
 
@@ -63,12 +59,12 @@ namespace WisePBX.NET8.Controllers
 
         [HttpPost]
         [ActionName("GetList")]
-        public IActionResult GetList([FromBody] dynamic p)
+        public IActionResult GetList([FromBody] JsonObject p)
         {
             if (p == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
-            string dnis = (p.dnis == null) ? "" : p.dnis.Value;
-            int agentId = (p.agentId == null) ? -1 : Convert.ToInt32(p.agentId.Value);
-            int handled = (p.handled == null) ? 0 : Convert.ToInt32(p.handled.Value);
+            string dnis = (p["dnis"] ?? "").ToString();
+            int agentId = Convert.ToInt32(p["agentId"] ?? "-1");
+            int handled = Convert.ToInt32(p["handled"] ?? "0");
 
             if (dnis == "" || agentId == -1) return Ok(new { result = "fail", details = "Invalid Parameters." });
 
@@ -85,11 +81,11 @@ namespace WisePBX.NET8.Controllers
             var data = new List<dynamic>();
             foreach (MediaCall _medialCall in _mediaList)
             {
-                string _file = _medialCall.Filename.Replace("\\\\win2016-demo\\", "http://172.17.7.40/wisepbx/").Replace(@"\", @"/");
+                string _file = (_medialCall.Filename??"").Replace("\\\\win2016-demo\\", "http://172.17.7.40/wisepbx/").Replace(@"\", @"/");
 
                 data.Add(new 
                 {
-                    CreateDateTime = (DateTime)_medialCall.CreateDateTime,
+                    CreateDateTime = _medialCall.CreateDateTime,
                     FaxID = _medialCall.CallID,
                     CallerDisplay = _medialCall.ANI,
                     FilePath = _file
@@ -112,7 +108,7 @@ namespace WisePBX.NET8.Controllers
                                     select m).SingleOrDefault();
             if (_mediaCall == null) return Ok(new { result = "fail", details = "No such record" });
 
-            string _file = _mediaCall.Filename.Replace("//" + hostName + "/", webUrl + "/").Replace(@"\", @"/");
+            string _file = (_mediaCall.Filename??"").Replace("//" + hostName + "/", webUrl + "/").Replace(@"\", @"/");
             var data = new 
             {
                 FileName = Path.GetFileName(_mediaCall.Filename),

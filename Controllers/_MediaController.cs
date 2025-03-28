@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.VisualBasic;
 using WisePBX.NET8.Models.Wise;
 
 namespace WisePBX.NET8.Controllers
@@ -19,40 +20,45 @@ namespace WisePBX.NET8.Controllers
             return Ok(new { result = "success", data = _count });
         }
 
+        private string CheckHandled(WiseEntities _wisedb, int callType, List<int> mediaIds)
+        {
+            List<MediaCall> _medialCallList = (from m in _wisedb.MediaCalls
+                                               where mediaIds.Contains(m.CallID) && m.CallType == callType //&& m.AgentID != 0
+                                               select m).ToList();
+            if (_medialCallList.Count == 0) return "";
+            string details = "";
+            foreach (MediaCall _m in _medialCallList)
+            {
+                if (_m.IsHandleFinish == 1)
+                {
+                    if (details != "") details += " ,";
+                    details += string.Format("Record {0} was already handled", _m.CallID);
+                }
+            }
+
+            return details;
+        }
         [HttpPost]
         public IActionResult AssignAgent(int callType, List<int> mediaIds, int assignTo, int updatedBy)
         {
             WiseEntities _wisedb = new WiseEntities();
+
+            string details = CheckHandled(_wisedb, callType, mediaIds);
+            if (details != "")
+                return Ok(new { result = "fail", details });
+            
             List<Object> data = new List<Object>();
-
-            List<MediaCall>? _medialCallList = (from m in _wisedb.MediaCalls
-                                               where mediaIds.Contains(m.CallID) && m.CallType == callType //&& m.AgentID != 0
-                                               select m).ToList();
-            if (_medialCallList != null)
-            {
-                string details = "";
-                foreach (MediaCall _m in _medialCallList)
-                {
-                    if (_m.IsHandleFinish == 1)
-                    {
-                        if (details != "") details += " ,";
-                        details += string.Format("Record {0} was already handled", _m.CallID);
-                    }
-                }
-                if (details != "")
-                    return Ok(new { result = "fail", details });
-
-            }
             foreach (int mediaId in mediaIds)
             {
                 MediaCall? _medialCall = (from m in _wisedb.MediaCalls
                                          where m.CallID == mediaId && m.CallType == callType
                                          select m).SingleOrDefault();
+                
                 if (_medialCall != null)
                 {
 
                     _medialCall.AgentID = assignTo;
-
+                    
                     _wisedb.MediaCall_Action_Logs.Add(new MediaCall_Action_Log()
                     {
                         CallId = mediaId,
@@ -61,10 +67,11 @@ namespace WisePBX.NET8.Controllers
                         Updated_By = updatedBy,
                         Updated_Time = DateTime.Now
                     });
+                    
                     _wisedb.SaveChanges();
                     data.Add(new { mediaId, dnis = _medialCall.DNIS });
                 }
-
+                
             }
             return Ok(new { result = "success", data });
         }
@@ -137,7 +144,7 @@ namespace WisePBX.NET8.Controllers
                                            && m.CallType == callType
                                            select m).ToList();
 
-            if (_medialList == null) 
+            if (_medialList.Count == 0) 
                 return Ok(new { result = "fail", details = "No such record" });
             foreach (MediaCall _medialCall in _medialList)
             {

@@ -357,7 +357,6 @@ namespace WisePBX.NET8.Controllers
                           Companies = "campaignCRM",
                           Categories = "FB-Post,Menu,Overdue-Reminder,Scheduled-Reminder,System-Tools",
                           Functions = "Admin-Transfer,Escalation-List,Incomplete-Cases,Escalation-List-Fn,Incomplete-Cases-Fn,Overdue-Reminder-Fn,Search-Case-Fn,Search-Case,Search-Customer",
-                          //                 config = new List<object> { new { a = 1, b = "g" }, new { a=2, b="f" }  }
                           config = new List<object> { new { P_Id = 1, P_Name = "RecordPerPage_Case", P_Value="5" },
                                 new { P_Id = 2, P_Name = "RecordPerPage_Case_Log", P_Value="5" },
                                 new { P_Id = 3, P_Name = "PhotoSize_MB", P_Value="5" },

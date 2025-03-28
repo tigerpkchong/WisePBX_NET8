@@ -12,9 +12,9 @@ namespace WisePBX.NET8.Controllers
     public class VmailController : _MediaController
     {
         private readonly IConfiguration configuration;
-        private string hostDrive;
-        private string hostName;
-        private string hostAddress;
+        private readonly string hostDrive;
+        private readonly string hostName;
+        private readonly string hostAddress;
         public VmailController(IConfiguration iConfig)
         {
             configuration = iConfig;
@@ -48,11 +48,7 @@ namespace WisePBX.NET8.Controllers
             string dnis = (p["dnis"] ?? "").ToString();
             int agentId = Convert.ToInt32((p["agentId"] ?? "-1").ToString());
             int handled = Convert.ToInt32((p["handled"] ?? "0").ToString());
-            //int read = (p.read == null) ? -1 : Convert.ToInt32(p.read.Value);
-            //string ani = (p.ani == null) ? "" : Convert.ToString(p.ani.Value);
-
-            //if (dnis == "" || agentId <= 0) return Ok(new { result = "fail", details = "Invalid Parameters." });
-
+            
             WiseEntities _wisedb = new WiseEntities();
             var _mediaList = (from m in _wisedb.MediaCalls
                               where (agentId == -1 || m.AgentID == agentId) && m.CallType == 7 &&
@@ -163,20 +159,6 @@ namespace WisePBX.NET8.Controllers
                           }).SingleOrDefault();
             if (_vmail == null) return Ok(new { result = "fail", details = "No such record" });
 
-            /*
-            string _file = _vmail.Filename.Replace(hostDrive+@":\", @"http://"+hostAddress+@"/wisepbx/").Replace(@"\", @"/");
-            
-            VmailContentClass data = new VmailContentClass()
-            {
-                FileName = Path.GetFileName(_vmail.Filename),
-                FileUrl = _file,
-                CreateDateTime= Convert.ToDateTime(_vmail.CreateDateTime),
-                CallerDisplay = _vmail.ANI,
-                Subject = _vmail.Subject,
-                Duration = _vmail.VMDuration ?? 0
-
-            };
-            */
             return Ok(new { result = "success", data = _vmail });
         }
 
