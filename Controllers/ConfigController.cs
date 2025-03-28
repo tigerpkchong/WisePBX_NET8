@@ -26,7 +26,7 @@ namespace WisePBX.NET8.Controllers
         {
             try
             {
-                List<int> _serviceIds = (from s in _wisedb.Service_ACDGroups select s.ServiceID).ToList();
+                var _serviceIds = (from s in _wisedb.Service_ACDGroups select s.ServiceID).AsEnumerable();
 
                 var data = (from i in _wisedb.Services
                             where _serviceIds.Contains(i.ServiceID)

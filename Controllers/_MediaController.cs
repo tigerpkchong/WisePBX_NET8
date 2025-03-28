@@ -53,7 +53,7 @@ namespace WisePBX.NET8.Controllers
             if (details != "")
                 return Ok(new { result = strFail, details });
             
-            List<Object> data = new List<Object>();
+            List<Object> data = [];
             foreach (int mediaId in mediaIds)
             {
                 MediaCall? _medialCall = (from m in _wisedb.MediaCalls
