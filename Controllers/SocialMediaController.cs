@@ -16,6 +16,8 @@ namespace WisePBX.NET8.Controllers
     [ApiController]
     public class SocialMediaController : ControllerBase
     {
+        private readonly string strSuccess = "success";
+        private readonly string strFail = "fail";
         private readonly string strInvalidParameters = "Invalid Parameters.";
         
         private readonly string hostAddress;
@@ -44,9 +46,9 @@ namespace WisePBX.NET8.Controllers
                 int agentId = form.agentId;
 
                 if (ticketId == string.Empty || agentId == 0)
-                    return Ok(new { result = "fail", details = strInvalidParameters });
+                    return Ok(new { result = strFail, details = strInvalidParameters });
                 if (form.files.Count == 0)
-                    return Ok(new { result = "fail", details = "No File Upload." });
+                    return Ok(new { result = strFail, details = "No File Upload." });
 
                 
                 string _fileFolder = Path.Combine(fileUploadPath, DateTime.Today.ToString("yyyyMMdd"), ticketId);
@@ -78,11 +80,11 @@ namespace WisePBX.NET8.Controllers
                         });
                     }
                 }
-                return Ok(new { result = "success", data });
+                return Ok(new { result = strSuccess, data });
             }
             catch (Exception ex)
             {
-                return Ok(new { result = "fail", data = ex.Message });
+                return Ok(new { result = strFail, data = ex.Message });
             }
 
         }
@@ -111,11 +113,11 @@ namespace WisePBX.NET8.Controllers
                              orderby m.start_time descending
                              select new { m.ticket_id, m.start_time, m.last_active_time }).Take(3);
 
-                return Ok(new { result = "success", data = _list.OrderBy(s => s.start_time) });
+                return Ok(new { result = strSuccess, data = _list.OrderBy(s => s.start_time) });
             }
             catch (Exception ex)
             {
-                return Ok(new { result = "fail", data = ex.Message });
+                return Ok(new { result = strFail, data = ex.Message });
             }
 
         }
@@ -136,7 +138,7 @@ namespace WisePBX.NET8.Controllers
                       o => new { start_time = DateTime.Parse(o.start_time, CultureInfo.CurrentCulture), last_time = DateTime.Parse(o.last_active_time, CultureInfo.CurrentCulture) }).ToList();
             return Ok(new
             {
-                result = "success",
+                result = strSuccess,
                 data = new { Count = _r.Count, AverageTime = _r.Average(x => x.last_time.Subtract(x.start_time).Seconds) }
             });
         }
@@ -161,7 +163,7 @@ namespace WisePBX.NET8.Controllers
                          CreateDateTime = ((DateTime)System.IO.File.GetCreationTime(o.FilePath)).ToString("s"),
                          ContentType = MimeTypes.GetMimeType(o.FileName??""),
                      });
-            return Ok(new { result = "success", data = _r });
+            return Ok(new { result = strSuccess, data = _r });
         }
 
         [HttpPost]
@@ -177,7 +179,7 @@ namespace WisePBX.NET8.Controllers
                       orderby m.MsgID
                       select m.Message).ToList();
 
-            return Ok(new { result = "success", data = _r });
+            return Ok(new { result = strSuccess, data = _r });
         }
 
         [HttpPost]
@@ -201,9 +203,9 @@ namespace WisePBX.NET8.Controllers
             }).ToList();
 
             if (number == 0)
-                return Ok(new { result = "success", total = _r.Count, data = _r });
+                return Ok(new { result = strSuccess, total = _r.Count, data = _r });
             else
-                return Ok(new { result = "success", total = _r.Count, data = _r.Take(number).OrderBy(x => x.sent_time) });
+                return Ok(new { result = strSuccess, total = _r.Count, data = _r.Take(number).OrderBy(x => x.sent_time) });
 
         }
 
@@ -225,7 +227,7 @@ namespace WisePBX.NET8.Controllers
 
             return Ok(new
             {
-                result = "success",
+                result = strSuccess,
                 total = _r.Count,
                 data = _r
             });
@@ -255,9 +257,9 @@ namespace WisePBX.NET8.Controllers
             }).ToList();
 
             if (number == 0)
-                return Ok(new { result = "success", data = _r });
+                return Ok(new { result = strSuccess, data = _r });
             else
-                return Ok(new { result = "success", data = _r.Take(number) });
+                return Ok(new { result = strSuccess, data = _r.Take(number) });
         }
 
         [HttpPost]
@@ -279,17 +281,17 @@ namespace WisePBX.NET8.Controllers
                             where m.ticket_id == ticketId
                             orderby m.field_index
                             select new { m.field_name, m.field_value }).ToList();
-            return Ok(new { result = "success", data = new { start_time = _start_time, online = _online, offline = _offline } });
+            return Ok(new { result = strSuccess, data = new { start_time = _start_time, online = _online, offline = _offline } });
         }
 
         [HttpPost]
         public IActionResult GetWhatsapp([FromBody] JsonObject p)
         {
-            if (p == null) return Ok(new { result = "fail", details = strInvalidParameters });
+            if (p == null) return Ok(new { result = strFail, details = strInvalidParameters });
 
-            if (p["startDate"] == null) return Ok(new { result = "fail", details = strInvalidParameters });
-            if (p["endDate"] == null) return Ok(new { result = "fail", details = strInvalidParameters });
-            if (p["companyCode"] == null) return Ok(new { result = "fail", details = strInvalidParameters });
+            if (p["startDate"] == null) return Ok(new { result = strFail, details = strInvalidParameters });
+            if (p["endDate"] == null) return Ok(new { result = strFail, details = strInvalidParameters });
+            if (p["companyCode"] == null) return Ok(new { result = strFail, details = strInvalidParameters });
 
             DateTime? startDate = Convert.ToDateTime(p["startDate"]?.ToString());
             DateTime? endDate = (Convert.ToDateTime(p["endDate"]?.ToString()));
@@ -312,7 +314,7 @@ namespace WisePBX.NET8.Controllers
                         && DateTime.ParseExact(m.sent_time,"yyyy-MM-dd", CultureInfo.InvariantCulture) >= startDate
                         && DateTime.ParseExact(m.sent_time, "yyyy-MM-dd", CultureInfo.InvariantCulture) < endDate
                         select m).ToList();
-            return Ok(new { result = "success", data });
+            return Ok(new { result = strSuccess, data });
         }
 
         [HttpPost]
@@ -326,13 +328,13 @@ namespace WisePBX.NET8.Controllers
             var _r = (from m in _wiseDB.AgentInfos
                       where agentIds.Contains(m.AgentID)
                       select new { m.AgentID, m.AgentName }).ToList();
-            return Ok(new { result = "success", data = _r });
+            return Ok(new { result = strSuccess, data = _r });
         }
 
         [HttpPost]
         public IActionResult Login([FromBody] JsonObject data)
         {
-            if (data == null) return Ok(new { result = "fail", details = "Invalid login." });
+            if (data == null) return Ok(new { result = strFail, details = "Invalid login." });
 
             int sellerId = Convert.ToInt32((data["SellerID"]??"0").ToString());
             string password = (data["Password"] ?? "").ToString();
@@ -366,9 +368,9 @@ namespace WisePBX.NET8.Controllers
                       }).SingleOrDefault();
 
             if (_r == null)
-                return Ok(new { result = "fail", details = "Invalid login." });
+                return Ok(new { result = strFail, details = "Invalid login." });
 
-            return Ok(new { result = "success", details = _r });
+            return Ok(new { result = strSuccess, details = _r });
         }
     }
 }

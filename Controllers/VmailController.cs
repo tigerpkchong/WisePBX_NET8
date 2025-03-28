@@ -11,6 +11,8 @@ namespace WisePBX.NET8.Controllers
     [ApiController]
     public class VmailController : _MediaController
     {
+        private readonly string strSuccess = "success";
+        private readonly string strFail = "fail";
         private readonly string strInvalidParameters = "Invalid Parameters.";
         private readonly string strNoSuchRecord = "No such record.";
 
@@ -29,12 +31,12 @@ namespace WisePBX.NET8.Controllers
         [ActionName("GetCount")]
         public IActionResult GetCount([FromBody] JsonObject p)
         {
-            if (p == null) return Ok(new { result = "fail", details = strInvalidParameters });
+            if (p == null) return Ok(new { result = strFail, details = strInvalidParameters });
             string dnis = (p["dnis"]??"").ToString();
             int agentId = Convert.ToInt32((p["agentId"]??"-1").ToString());
             int handled = Convert.ToInt32((p["handled"] ?? "0").ToString());
 
-            if (dnis == "" || agentId == -1) return Ok(new { result = "fail", details = strInvalidParameters });
+            if (dnis == "" || agentId == -1) return Ok(new { result = strFail, details = strInvalidParameters });
 
             return base.GetCount(7, agentId, dnis, handled);
         }
@@ -43,8 +45,8 @@ namespace WisePBX.NET8.Controllers
         [ActionName("GetList")]
         public IActionResult GetList([FromBody] JsonObject p)
         {
-            if (p == null) return Ok(new { result = "fail", details = strInvalidParameters });
-            if (p["dnis"] == null) return Ok(new { result = "fail", details = strInvalidParameters });
+            if (p == null) return Ok(new { result = strFail, details = strInvalidParameters });
+            if (p["dnis"] == null) return Ok(new { result = strFail, details = strInvalidParameters });
 
             string dnis = (p["dnis"] ?? "").ToString();
             int agentId = Convert.ToInt32((p["agentId"] ?? "-1").ToString());
@@ -80,7 +82,7 @@ namespace WisePBX.NET8.Controllers
                 });
             }
 
-            return Ok(new { result = "success", data });
+            return Ok(new { result = strSuccess, data });
 
         }
 
@@ -91,7 +93,7 @@ namespace WisePBX.NET8.Controllers
             int mediaId = Convert.ToInt32((p["mediaId"]??"0").ToString());
             string caseNo = (p["caseNo"] ?? "0").ToString();
             int updatedBy = Convert.ToInt32((p["updatedBy"] ?? "0").ToString());
-            if (mediaId <= 0) return Ok(new { result = "fail", details = strInvalidParameters });
+            if (mediaId <= 0) return Ok(new { result = strFail, details = strInvalidParameters });
 
             return base.SetHandled(7, mediaId, caseNo, updatedBy);
         }
@@ -101,7 +103,7 @@ namespace WisePBX.NET8.Controllers
         {
             int updatedBy = Convert.ToInt32((p["updatedBy"] ?? "0").ToString());
             if (p["mediaId"] == null)
-                return Ok(new { result = "fail", details = strInvalidParameters });
+                return Ok(new { result = strFail, details = strInvalidParameters });
             if (p["mediaId"]?.GetType().Name == "JArray")
             {
                 int[]? mediaIds = p["mediaId"]?.GetValue<int[]>();
@@ -123,7 +125,7 @@ namespace WisePBX.NET8.Controllers
             int assignTo = Convert.ToInt32((p["assignTo"]??"-1").ToString());
             int updatedBy = Convert.ToInt32((p["updatedBy"] ?? "-1").ToString());
             if (mediaIds == null || assignTo == -1 || updatedBy == -1)
-                return Ok(new { result = "fail", details = strInvalidParameters });
+                return Ok(new { result = strFail, details = strInvalidParameters });
 
             return base.AssignAgent(7, mediaIds, assignTo, updatedBy);
         }
@@ -133,7 +135,7 @@ namespace WisePBX.NET8.Controllers
         public IActionResult GetContent([FromBody] JsonObject p)
         {
             int id = Convert.ToInt32((p["id"]??"-1").ToString());
-            if (id <= 0) return Ok(new { result = "fail", details = strInvalidParameters });
+            if (id <= 0) return Ok(new { result = strFail, details = strInvalidParameters });
             string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
 
             WiseEntities _wisedb = new WiseEntities();
@@ -158,9 +160,9 @@ namespace WisePBX.NET8.Controllers
                               Duration = m.MediaDuration ?? o.VMDuration ?? 0,
                               m.ReadFlag,
                           }).SingleOrDefault();
-            if (_vmail == null) return Ok(new { result = "fail", details = strNoSuchRecord });
+            if (_vmail == null) return Ok(new { result = strFail, details = strNoSuchRecord });
 
-            return Ok(new { result = "success", data = _vmail });
+            return Ok(new { result = strSuccess, data = _vmail });
         }
 
         [HttpPost]
@@ -169,7 +171,7 @@ namespace WisePBX.NET8.Controllers
             int caseId = Convert.ToInt32((p["caseId"]??"-1").ToString());
             int agentId = Convert.ToInt32((p["agentId"] ?? "-1").ToString());
             if (caseId <= 0 || agentId <= 0)
-                return Ok(new { result = "fail", details = strInvalidParameters });
+                return Ok(new { result = strFail, details = strInvalidParameters });
             return base.GetCallid(12, caseId, agentId);
         }
     }

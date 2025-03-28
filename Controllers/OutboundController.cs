@@ -11,6 +11,8 @@ namespace WisePBX.NET8.Controllers
     [ApiController]
     public class OutboundController : ControllerBase
     {
+        private readonly string strSuccess = "success";
+        private readonly string strFail = "fail";
         private readonly string strInvalidParameters = "Invalid Parameters.";
 
         private readonly string fileUploadPath;
@@ -27,7 +29,7 @@ namespace WisePBX.NET8.Controllers
             int caseId = (p.caseId == null) ? -1 : Convert.ToInt32(p.caseId.Value);
             int agentId = (p.agentId == null) ? -1 : Convert.ToInt32(p.agentId.Value);
             if (caseId == -1 || agentId == -1)
-                return Ok(new { result = "fail", details = strInvalidParameters });
+                return Ok(new { result = strFail, details = strInvalidParameters });
             WiseEntities _wisedb = new WiseEntities();
             int _callId = 0, _count = 0;
             do
@@ -41,7 +43,7 @@ namespace WisePBX.NET8.Controllers
                 if (_callId == 0 && _count <= 7) System.Threading.Thread.Sleep(500);
 
             } while (_callId == 0 && _count <= 7);
-            return Ok(new { result = "success", data = _callId });
+            return Ok(new { result = strSuccess, data = _callId });
         }
 
         [HttpPost]
@@ -50,7 +52,7 @@ namespace WisePBX.NET8.Controllers
         {
             int agentId = (p.agentId == null) ? -1 : Convert.ToInt32(p.agentId.Value);
             if (agentId == -1)
-                return Ok(new { result = "fail", details = strInvalidParameters });
+                return Ok(new { result = strFail, details = strInvalidParameters });
             WiseEntities _wisedb = new WiseEntities();
             var _objCase = new MediaCall_CaseID
             {
@@ -60,7 +62,7 @@ namespace WisePBX.NET8.Controllers
             _wisedb.MediaCall_CaseIDs.Add(_objCase);
             _wisedb.SaveChanges();
 
-            return Ok(new { result = "success", data = _objCase.CaseId });
+            return Ok(new { result = strSuccess, data = _objCase.CaseId });
         }
         public partial record UploadForm
         {
@@ -73,7 +75,7 @@ namespace WisePBX.NET8.Controllers
         public async Task<IActionResult> UploadAttachment(UploadForm form)
         {
             if (form.files.Count == 0)
-                return Ok(new { result = "fail", details = "No File Upload." });
+                return Ok(new { result = strFail, details = "No File Upload." });
 
             string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
             string _tmpFolder = ((form.campaignId == 0) ? "C" + form.caseNo : "O" + form.campaignId) + "-" + form.agentId + "-" + DateTime.Now.Ticks;
@@ -105,7 +107,7 @@ namespace WisePBX.NET8.Controllers
             }
 
 
-            return Ok(new { result = "success", data });
+            return Ok(new { result = strSuccess, data });
         }
 
         [HttpPost]
@@ -137,7 +139,7 @@ namespace WisePBX.NET8.Controllers
                 }
             }
             
-            return Ok(new { result = "success" });
+            return Ok(new { result = strSuccess });
         }
     }
 }
