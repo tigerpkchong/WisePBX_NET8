@@ -10,13 +10,11 @@ namespace WisePBX.NET8.Controllers
     [ApiController]
     public class FaxController : _MediaController
     {
-        private readonly IConfiguration configuration;
         private readonly string hostName;
         
         public FaxController(IConfiguration iConfig)
         {
-            configuration = iConfig;
-            hostName = configuration.GetValue<string>("HostName") ?? "";
+            hostName = iConfig.GetValue<string>("HostName") ?? "";
         }
         [HttpPost]
         [ActionName("GetCount")]

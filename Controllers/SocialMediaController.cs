@@ -16,20 +16,15 @@ namespace WisePBX.NET8.Controllers
     [ApiController]
     public class SocialMediaController : ControllerBase
     {
-        private readonly IWebHostEnvironment environment;
-        private readonly IConfiguration configuration;
         private readonly string hostAddress;
         private readonly string fileUploadPath;
-        
-
         public SocialMediaController(IConfiguration iConfig, IWebHostEnvironment ienvironment)
         {
-            environment = ienvironment;
-            configuration = iConfig;
-            hostAddress = configuration.GetValue<string>("HostAddress") ?? "";
-            fileUploadPath = configuration.GetValue<string>("FileUploadPath") ?? "";
+            
+            hostAddress = iConfig.GetValue<string>("HostAddress") ?? "";
+            fileUploadPath = iConfig.GetValue<string>("FileUploadPath") ?? "";
             if (fileUploadPath == "")
-                fileUploadPath = environment.ContentRootPath + "/Uploads";
+                fileUploadPath = ienvironment.ContentRootPath + "/Uploads";
         }
 
         public partial record UploadForm

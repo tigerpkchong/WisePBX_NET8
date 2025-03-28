@@ -11,16 +11,12 @@ namespace WisePBX.NET8.Controllers
     [ApiController]
     public class OutboundController : ControllerBase
     {
-        private readonly IConfiguration configuration;
-        private readonly IWebHostEnvironment environment;
         private readonly string fileUploadPath;
         public OutboundController(IConfiguration iConfig,IWebHostEnvironment ienvironment)
         {
-            environment = ienvironment;
-            configuration = iConfig;
-            fileUploadPath = configuration.GetValue<string>("FileUploadPath") ?? "";
+            fileUploadPath = iConfig.GetValue<string>("FileUploadPath") ?? "";
             if(fileUploadPath=="")
-                fileUploadPath=environment.ContentRootPath + "/Uploads";
+                fileUploadPath= ienvironment.ContentRootPath + "/Uploads";
         }
         [HttpPost]
         public IActionResult GetCallId([FromBody] dynamic p)

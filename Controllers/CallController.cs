@@ -12,15 +12,14 @@ namespace WisePBX.NET8.Controllers
     
     public class CallController : _MediaController
     {
-        private readonly IConfiguration configuration;
+        
         private readonly string hostDrive;
         private readonly string hostName;
         
         public CallController(IConfiguration iConfig)
         {
-            configuration = iConfig;
-            hostDrive = configuration.GetValue<string>("hostDrive") ?? "";
-            hostName = configuration.GetValue<string>("HostName") ?? "";
+            hostDrive = iConfig.GetValue<string>("hostDrive") ?? "";
+            hostName = iConfig.GetValue<string>("HostName") ?? "";
         }
 
         [HttpPost]

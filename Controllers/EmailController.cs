@@ -23,21 +23,16 @@ namespace WisePBX.NET8.Controllers
     [ApiController]
     public class EmailController : _MediaController
     {
-        private readonly IConfiguration configuration;
         private readonly string hostDrive;
         private readonly string hostName;
         private readonly string fileUploadPath;
-        private readonly IWebHostEnvironment environment;
-
         public EmailController(IConfiguration iConfig, IWebHostEnvironment ienvironment)
         {
-            environment = ienvironment;
-            configuration = iConfig;
-            hostDrive = configuration.GetValue<string>("hostDrive") ?? "";
-            hostName = configuration.GetValue<string>("HostName") ?? "";
-            fileUploadPath = configuration.GetValue<string>("FileUploadPath") ?? "";
+            hostDrive = iConfig.GetValue<string>("hostDrive") ?? "";
+            hostName = iConfig.GetValue<string>("HostName") ?? "";
+            fileUploadPath = iConfig.GetValue<string>("FileUploadPath") ?? "";
             if (fileUploadPath == "")
-                fileUploadPath = environment.ContentRootPath + "/Uploads";
+                fileUploadPath = ienvironment.ContentRootPath + "/Uploads";
         }
 
         [HttpPost]

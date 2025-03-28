@@ -11,16 +11,14 @@ namespace WisePBX.NET8.Controllers
     [ApiController]
     public class VmailController : _MediaController
     {
-        private readonly IConfiguration configuration;
         private readonly string hostDrive;
         private readonly string hostName;
         private readonly string hostAddress;
         public VmailController(IConfiguration iConfig)
         {
-            configuration = iConfig;
-            hostDrive = configuration.GetValue<string>("hostDrive") ?? "";
-            hostName = configuration.GetValue<string>("HostName") ?? "";
-            hostAddress = configuration.GetValue<string>("HostAddress") ?? "";
+            hostDrive = iConfig.GetValue<string>("hostDrive") ?? "";
+            hostName = iConfig.GetValue<string>("HostName") ?? "";
+            hostAddress = iConfig.GetValue<string>("HostAddress") ?? "";
             
         }
 
