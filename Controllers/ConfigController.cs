@@ -98,7 +98,7 @@ namespace WisePBX.NET8.Controllers
                 if (p == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
                 if (p["agentIds"] == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
 
-                List<int> agentIds = p["agentIds"].GetValue<List<int>>();
+                List<int>? agentIds = p["agentIds"]?.GetValue<List<int>>() ?? [];
                 WiseEntities _wisedb = new WiseEntities();
 
                 var data = (from i in _wisedb.AgentInfos
@@ -265,7 +265,7 @@ namespace WisePBX.NET8.Controllers
                 bool isAgent = (from a in _wisedb.AgentInfos where a.AgentID == agentId select a).Any();
                 if (!isAgent) return Ok(new { result = "fail", details = "No such agent." });
 
-                List<ACDGroupAccessClass> setting = p["setting"].GetValue<List<ACDGroupAccessClass>>();
+                List<ACDGroupAccessClass> setting = p["setting"]?.GetValue<List<ACDGroupAccessClass>>() ?? [];
 
                 foreach (ACDGroupAccessClass i in setting)
                 {
@@ -460,7 +460,7 @@ namespace WisePBX.NET8.Controllers
             {
                 if (p == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
                 if (p["reportDate"] == null) return Ok(new { result = "fail", details = "Invalid Parameters." });
-                DateTime reportDate = Convert.ToDateTime(p["reportDate"].ToString());
+                DateTime reportDate = Convert.ToDateTime(p["reportDate"]?.ToString());
 
 
                 WiseEntities _wisedb = new WiseEntities();

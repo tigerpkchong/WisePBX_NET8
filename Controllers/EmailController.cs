@@ -25,6 +25,7 @@ namespace WisePBX.NET8.Controllers
     {
         private readonly string strSuccess = "success";
         private readonly string strFail = "fail";
+        private readonly string strError = "error";
         private readonly string strInvalidParameters = "Invalid Parameters.";
         private readonly string strNoSuchRecord = "No such record.";
 
@@ -43,7 +44,7 @@ namespace WisePBX.NET8.Controllers
         [HttpPost]
         public IActionResult GetList([FromBody] JsonObject p)
         {
-            if (p == null) return Ok(new { result = "error", details = strInvalidParameters });
+            if (p == null) return Ok(new { result = strError, details = strInvalidParameters });
             string dnis = (p["dnis"]??"").ToString();
             int agentId = Convert.ToInt32((p["agentId"] ?? "-1").ToString());
             int handled = Convert.ToInt32((p["handled"] ?? "0").ToString());
@@ -62,7 +63,7 @@ namespace WisePBX.NET8.Controllers
             {
                 string? _file = _medialCall.Filename?.Replace($@"\\{hostName}\", $@"{hostDrive}:\");
                 MimeMessage message = MimeMessage.Load(_file);
-                string _content = (message.HtmlBody != null) ? message.HtmlBody : message.TextBody;
+                string _content = message.HtmlBody??message.TextBody;
                 _content = _rgx.Replace(_content.Substring(0, Math.Min(100, _content.Length)), "<br/>");
                 data.Add(new 
                 {
@@ -81,7 +82,7 @@ namespace WisePBX.NET8.Controllers
         [HttpPost]
         public IActionResult GetCount([FromBody] JsonObject p)
         {
-            if (p == null) return Ok(new { result = "error", details = strInvalidParameters });
+            if (p == null) return Ok(new { result = strError, details = strInvalidParameters });
             string dnis = (p["dnis"] ?? "").ToString();
             int agentId = Convert.ToInt32((p["agentId"] ?? "-1").ToString());
             int handled = Convert.ToInt32((p["handled"] ?? "0").ToString());
@@ -108,7 +109,7 @@ namespace WisePBX.NET8.Controllers
             string _file = _mediaCall.Filename??"";
             Regex _rgx = new Regex("\r?\n");
             MimeMessage message = MimeMessage.Load(_file);
-            string _content = (message.HtmlBody != null) ? message.HtmlBody : _rgx.Replace(message.TextBody, "<br/>");
+            string _content = message.HtmlBody??_rgx.Replace(message.TextBody, "<br/>");
             DateTime _timestamp = (_mediaCall.CallType == 12) ? message.Date.LocalDateTime : 
                 _mediaCall.ArriveDateTime?? message.Date.LocalDateTime;
             var data = new
@@ -240,7 +241,7 @@ namespace WisePBX.NET8.Controllers
             }
             catch (Exception ex)
             {
-                return Ok(new { result = "error", details = ex.Message });
+                return Ok(new { result = strError, details = ex.Message });
             }
 
         }
@@ -265,7 +266,7 @@ namespace WisePBX.NET8.Controllers
             }
             catch (Exception ex)
             {
-                return Ok(new { result = "error", details = ex.Message });
+                return Ok(new { result = strError, details = ex.Message });
             }
         }
 
@@ -308,7 +309,7 @@ namespace WisePBX.NET8.Controllers
             }
             catch (Exception ex)
             {
-                return Ok(new { result = "error", details = ex.Message });
+                return Ok(new { result = strError, details = ex.Message });
             }
         }
 
@@ -482,7 +483,7 @@ namespace WisePBX.NET8.Controllers
                     string _file = (_mediaCall.Filename??"").Replace($@"\\{hostName}\", $@"{hostDrive}:\");
                     MimeMessage message = MimeMessage.Load(_file);
 
-                    string _content = (message.HtmlBody != null) ? message.HtmlBody : message.TextBody;
+                    string _content = message.HtmlBody??message.TextBody;
                     _content = _rgx.Replace(_content.Substring(0, Math.Min(100, _content.Length)), "<br/>");
 
                     

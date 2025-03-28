@@ -3,8 +3,8 @@
     public class get_fb_comment_Result
     {
         public long ticket_id { get; set; }
-        public string msg_id { get; set; }
-        public string sent_time { get; set; }
+        public string? msg_id { get; set; }
+        public string? sent_time { get; set; }
         public int index_no { get; set; }
         public string? msg_type { get; set; }
         public string? msg_content { get; set; }
