@@ -114,7 +114,7 @@ namespace WisePBX.NET8.Controllers
             }
             else
             {
-                int mediaId = Convert.ToInt32(p["mediaId"].ToString());
+                int mediaId = Convert.ToInt32(p["mediaId"]?.ToString());
                 return base.SetRead(7, mediaId, updatedBy);
             }
         }
@@ -124,7 +124,7 @@ namespace WisePBX.NET8.Controllers
         public IActionResult AssignAgent([FromBody] JsonObject p)
         {
 
-            List<int> mediaIds = p["mediaIds"].GetValue<List<int>>();
+            List<int>? mediaIds = p["mediaIds"]?.GetValue<List<int>>();
             int assignTo = Convert.ToInt32((p["assignTo"]??"-1").ToString());
             int updatedBy = Convert.ToInt32((p["updatedBy"] ?? "-1").ToString());
             if (mediaIds == null || assignTo == -1 || updatedBy == -1)
@@ -156,7 +156,7 @@ namespace WisePBX.NET8.Controllers
                               StaffNo = m.AgentID,
                               m.IsHandleFinish,
                               m.Filename,
-                              FileUrl = m.Filename.Replace(hostDrive + @":\", webUrl + "/").Replace(@"\", @"/"),
+                              FileUrl = (m.Filename??"").Replace(hostDrive + @":\", webUrl + "/").Replace(@"\", @"/"),
                               TimeStamp = m.ArriveDateTime,
                               Duration = m.MediaDuration ?? o.VMDuration ?? 0,
                               m.ReadFlag,
@@ -173,7 +173,7 @@ namespace WisePBX.NET8.Controllers
             int agentId = Convert.ToInt32((p["agentId"] ?? "-1").ToString());
             if (caseId <= 0 || agentId <= 0)
                 return Ok(new { result = strFail, details = strInvalidParameters });
-            return base.GetCallid(12, caseId, agentId);
+            return base.GetCallid(12, caseId);
         }
     }
 }

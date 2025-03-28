@@ -189,8 +189,8 @@ namespace WisePBX.NET8.Controllers
             {
                 if (p == null) return Ok(new { result = strFail, details = strInvalidParameters });
                 
-                DateTime startDate = (p["startDate"] == null) ? DateTime.Today.AddYears(-1) : Convert.ToDateTime(p["startDate"].ToString());
-                DateTime endDate = (p["endDate"] == null) ? DateTime.Today.AddDays(1) : (Convert.ToDateTime((p["endDate"]??"").ToString())).AddDays(1);
+                DateTime startDate = (p["startDate"] == null) ? DateTime.Today : Convert.ToDateTime(p["startDate"]?.ToString());
+                DateTime endDate = (p["endDate"] == null) ? DateTime.Today.AddDays(1) : (Convert.ToDateTime(p["endDate"]?.ToString())).AddDays(1);
                 int serviceId = (p["serviceId"] == null) ? -1 : Convert.ToInt32((p["serviceId"]??"-1").ToString());
 
                 string[] agentId = []; 

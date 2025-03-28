@@ -181,7 +181,7 @@ namespace WisePBX.NET8.Controllers
                                    AvgAbandonedTime = (g.Sum(x => x.AbandonedCall) == 0) ? 0 :
                                         (int)Math.Round((double)g.Sum(x => x.AbandonedTime ?? 0) / (double)g.Sum(x => x.AbandonedCall ?? 0)),
                                    AvgTalkTime = (g.Sum(x => x.AnsweredCall) + g.Sum(x => x.OutboundCall) == 0) ? 0 :
-                                        (int)Math.Round((double)(g.Sum(x => x.AnsweredTalkTime ?? 0) + g.Sum(x => x.OutboundTalkTime ?? 0)) / (double)(g.Sum(x => x.AnsweredCall) + g.Sum(x => x.OutboundCall))),
+                                        (int)Math.Round((double)(g.Sum(x => x.AnsweredTalkTime ?? 0) + g.Sum(x => x.OutboundTalkTime ?? 0)) / (double)(g.Sum(x => x.AnsweredCall??0) + g.Sum(x => x.OutboundCall??0))),
                                    AvgAnsweredTime = (g.Sum(x => x.AnsweredCall) == 0) ? 0 :
                                         (int)Math.Round((double)g.Sum(x => x.AnsweredWaitTime ?? 0) / (double)g.Sum(x => x.AnsweredCall ?? 0)),
                                }).SingleOrDefault();
@@ -195,15 +195,15 @@ namespace WisePBX.NET8.Controllers
                                     AnsweredCall = g.Sum(x => x.AnsweredCall),
                                     AbandonedCall = g.Sum(x => x.AbandonedCall),
                                     PctAnsweredCall = (g.Sum(x => x.IncomingCall) == 0) ? 0 :
-                                        (int)Math.Round((double)g.Sum(x => x.AnsweredCall) / (double)g.Sum(x => x.IncomingCall) * 100),
+                                        (int)Math.Round((double)g.Sum(x => x.AnsweredCall ?? 0) / (double)g.Sum(x => x.IncomingCall ?? 0) * 100),
                                     PctAbandonedCall = (g.Sum(x => x.IncomingCall) == 0) ? 0 :
-                                        (int)Math.Round((double)g.Sum(x => x.AbandonedCall) / (double)g.Sum(x => x.IncomingCall) * 100),
+                                        (int)Math.Round((double)g.Sum(x => x.AbandonedCall ?? 0) / (double)g.Sum(x => x.IncomingCall ?? 0) * 100),
                                     AvgAbandonedTime = (g.Sum(x => x.AbandonedCall) == 0) ? 0 :
-                                        (int)Math.Round((double)g.Sum(x => x.AbandonedTime) / (double)g.Sum(x => x.AbandonedCall)),
+                                        (int)Math.Round((double)g.Sum(x => x.AbandonedTime ?? 0) / (double)g.Sum(x => x.AbandonedCall ?? 0)),
                                     AvgTalkTime = (g.Sum(x => x.AnsweredCall) == 0) ? 0 :
-                                        (int)Math.Round((double)g.Sum(x => x.AnsweredTalkTime) / (double)g.Sum(x => x.AnsweredCall)),
+                                        (int)Math.Round((double)g.Sum(x => x.AnsweredTalkTime ?? 0) / (double)g.Sum(x => x.AnsweredCall ?? 0)),
                                     AvgAnsweredTime = (g.Sum(x => x.AnsweredCall) == 0) ? 0 :
-                                        (int)Math.Round((double)g.Sum(x => x.AnsweredWaitTime) / (double)g.Sum(x => x.AnsweredCall)),
+                                        (int)Math.Round((double)g.Sum(x => x.AnsweredWaitTime ?? 0) / (double)g.Sum(x => x.AnsweredCall ?? 0)),
                                 }).SingleOrDefault();
                 return Ok(new { result = "success", data = new { service, acdGroup/*, TimeTicks = DateTime.MaxValue.Ticks */} });
             }

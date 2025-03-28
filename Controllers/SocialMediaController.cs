@@ -141,7 +141,10 @@ namespace WisePBX.NET8.Controllers
                       where m.enduser_id == userId && m.entry == entry && m.status_id == 2
                       && m.company_code == companyCode
                       select m).AsEnumerable().Select(
-                      o => new { start_time = DateTime.Parse(o.start_time, CultureInfo.CurrentCulture), last_time = DateTime.Parse(o.last_active_time, CultureInfo.CurrentCulture) }).ToList();
+                      o => new { 
+                          start_time = DateTime.Parse(o.start_time ?? "", CultureInfo.CurrentCulture), 
+                          last_time = DateTime.Parse(o.last_active_time ?? "", CultureInfo.CurrentCulture) 
+                      }).ToList();
             return Ok(new
             {
                 result = strSuccess,
@@ -165,8 +168,8 @@ namespace WisePBX.NET8.Controllers
                          o.FileName,
                          o.FilePath,
                          o.FileUrl,
-                         CreateDateTime = (System.IO.File.GetCreationTime(o.FilePath)).ToString("s"),
-                         ContentType = MimeTypes.GetMimeType(o.FileName??""),
+                         CreateDateTime = (System.IO.File.GetCreationTime(o.FilePath ?? "")).ToString("s"),
+                         ContentType = MimeTypes.GetMimeType(o.FileName ?? ""),
                      });
             return Ok(new { result = strSuccess, data = _r });
         }

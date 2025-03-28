@@ -172,7 +172,7 @@ namespace WisePBX.NET8.Controllers
             return Ok(new { result = strSuccess });
         }
         [HttpPost]
-        public IActionResult GetCallid(int callType, int mediaCaseID, int agentID)
+        public IActionResult GetCallid(int callType, int mediaCaseID)
         {
             MediaCall? _m;
             do
