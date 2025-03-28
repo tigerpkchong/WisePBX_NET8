@@ -9,6 +9,9 @@ namespace WisePBX.NET8.Controllers
     [ApiController]
     public class _MediaController : ControllerBase
     {
+        private readonly string strSuccess = "success";
+        private readonly string strFail = "fail";
+
         private readonly WiseEntities _wisedb;
         public _MediaController(WiseEntities wiseEntities) 
         {
@@ -22,17 +25,17 @@ namespace WisePBX.NET8.Controllers
                           where m.AgentID == agentId && m.DNIS == dnis && m.IsHandleFinish == handled
                           && m.CallType == callType
                           select m.CallID).Count();
-            return Ok(new { result = "success", data = _count });
+            return Ok(new { result = strSuccess, data = _count });
         }
 
         private static string CheckHandled(WiseEntities _wisedb, int callType, List<int> mediaIds)
         {
-            List<MediaCall> _medialCallList = (from m in _wisedb.MediaCalls
+            var _medialCallList = (from m in _wisedb.MediaCalls
                                                where mediaIds.Contains(m.CallID) && m.CallType == callType //&& m.AgentID != 0
-                                               select m).ToList();
-            if (_medialCallList.Count == 0) return "";
+                                               select m).AsEnumerable();
+            if (!_medialCallList.Any()) return "";
             string details = "";
-            foreach (MediaCall _m in _medialCallList)
+            foreach (var _m in _medialCallList)
             {
                 if (_m.IsHandleFinish == 1)
                 {
@@ -48,7 +51,7 @@ namespace WisePBX.NET8.Controllers
         {
             string details = CheckHandled(_wisedb, callType, mediaIds);
             if (details != "")
-                return Ok(new { result = "fail", details });
+                return Ok(new { result = strFail, details });
             
             List<Object> data = new List<Object>();
             foreach (int mediaId in mediaIds)
@@ -76,7 +79,7 @@ namespace WisePBX.NET8.Controllers
                 }
                 
             }
-            return Ok(new { result = "success", data });
+            return Ok(new { result = strSuccess, data });
         }
         [HttpPost]
         public IActionResult SetHandled(int callType, int mediaId, string caseNo, int updatedBy)
@@ -85,7 +88,7 @@ namespace WisePBX.NET8.Controllers
                                      where m.CallID == mediaId && m.CallType == callType
                                      select m).SingleOrDefault();
             if (_medialCall == null) 
-                return Ok(new { result = "fail", details = "No such record" });
+                return Ok(new { result = strFail, details = "No such record" });
 
             if (_medialCall.IsHandleFinish == 0)
             {
@@ -104,7 +107,7 @@ namespace WisePBX.NET8.Controllers
             });
             _wisedb.SaveChanges();
 
-            return Ok(new { result = "success", data = _medialCall.DNIS });
+            return Ok(new { result = strSuccess, data = _medialCall.DNIS });
         }
         [HttpPost]
         public IActionResult SetRead(int callType, int mediaId, int updatedBy)
@@ -113,7 +116,7 @@ namespace WisePBX.NET8.Controllers
                                      where m.CallID == mediaId && m.CallType == callType
                                      select m).SingleOrDefault();
             if (_medialCall == null) 
-                return Ok(new { result = "fail", details = "No such record" });
+                return Ok(new { result = strFail, details = "No such record" });
 
             if (_medialCall.ReadFlag == 0)
             {
@@ -132,9 +135,9 @@ namespace WisePBX.NET8.Controllers
                 });
                 _wisedb.SaveChanges();
 
-                return Ok(new { result = "success" });
+                return Ok(new { result = strSuccess });
             }
-            return Ok(new { result = "fail", details = "it is already read" });
+            return Ok(new { result = strFail, details = "it is already read" });
         }
         [HttpPost]
         public IActionResult SetRead(int callType, int[] mediaIds, int updatedBy)
@@ -145,7 +148,7 @@ namespace WisePBX.NET8.Controllers
                                            select m).ToList();
 
             if (_medialList.Count == 0) 
-                return Ok(new { result = "fail", details = "No such record" });
+                return Ok(new { result = strFail, details = "No such record" });
             foreach (MediaCall _medialCall in _medialList)
             {
                 if (_medialCall.ReadFlag == 0)
@@ -166,7 +169,7 @@ namespace WisePBX.NET8.Controllers
                     _wisedb.SaveChanges();
                 }
             }
-            return Ok(new { result = "success" });
+            return Ok(new { result = strSuccess });
         }
         [HttpPost]
         public IActionResult GetCallid(int callType, int mediaCaseID, int agentID)
@@ -179,7 +182,7 @@ namespace WisePBX.NET8.Controllers
                       select m).SingleOrDefault();
                 if (_m == null) System.Threading.Thread.Sleep(500);
             } while (_m == null);
-            return Ok(new { result = "success", data = _m.CallID });
+            return Ok(new { result = strSuccess, data = _m.CallID });
         }
     }
 }

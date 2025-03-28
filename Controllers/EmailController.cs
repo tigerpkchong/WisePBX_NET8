@@ -61,19 +61,19 @@ namespace WisePBX.NET8.Controllers
                               && m.CallType == 6
                               select m).ToList();
 
-            Regex _rgx = new Regex("\r?\n");
+            Regex _rgx = new("\r?\n");
             var data = new List<dynamic>();
             foreach (MediaCall _medialCall in _mediaList)
             {
                 string? _file = _medialCall.Filename?.Replace($@"\\{hostName}\", $@"{hostDrive}:\");
                 MimeMessage message = MimeMessage.Load(_file);
                 string _content = message.HtmlBody??message.TextBody;
-                _content = _rgx.Replace(_content.Substring(0, Math.Min(100, _content.Length)), "<br/>");
+                _content = _rgx.Replace(_content[..Math.Min(100, _content.Length)], "<br/>");
                 data.Add(new 
                 {
                     CreateDateTime = _medialCall.ArriveDateTime,
                     EmailID = _medialCall.CallID,
-                    Name = message.From[0].Name,
+                    message.From[0].Name,
                     Sender = message.From.Mailboxes.Single().Address,
                     Subject = message.Subject ?? "",
                     Content = _content
@@ -130,60 +130,52 @@ namespace WisePBX.NET8.Controllers
             {
                 if (bodyPart.FileName != null && !bodyPart.IsAttachment)
                 {
-                    using (var memoryStream = new MemoryStream())
+                    using var memoryStream = new MemoryStream();
+                    
+                    bodyPart.Content.DecodeTo(memoryStream);
+                    byte[] buffer = memoryStream.GetBuffer();
+
+                    var aa = new 
                     {
-
-                        bodyPart.Content.DecodeTo(memoryStream);
-                        byte[] buffer = memoryStream.GetBuffer();
-
-                        var aa = new 
-                        {
-                            FileName = bodyPart.FileName,
-                            Base64Data = Convert.ToBase64String(buffer, 0, (int)memoryStream.Length),
-                            ContentType = bodyPart.ContentType.MimeType
-                        };
-                        data.Attachments.Add(aa);
-                    }
-
+                        bodyPart.FileName,
+                        Base64Data = Convert.ToBase64String(buffer, 0, (int)memoryStream.Length),
+                        ContentType = bodyPart.ContentType.MimeType
+                    };
+                    data.Attachments.Add(aa);
                 }
             }
             foreach (MimeEntity entity in message.Attachments)
             {
-                MimePart? a = entity as MimePart;
-                if (a != null)
+                if (entity is MimePart mimePart)
                 {
-                    using (var memoryStream = new MemoryStream())
+                    using var memoryStream = new MemoryStream();
+
+                    mimePart.Content.DecodeTo(memoryStream);
+                    byte[] buffer = memoryStream.GetBuffer();
+
+                    var attachment = new
                     {
+                        mimePart.FileName,
+                        Base64Data = Convert.ToBase64String(buffer, 0, (int)memoryStream.Length),
+                        ContentType = mimePart.ContentType.MimeType
+                    };
+                    data.Attachments.Add(attachment);
 
-                        a.Content.DecodeTo(memoryStream);
-                        byte[] buffer = memoryStream.GetBuffer();
-
-                        var aa = new 
-                        {
-                            FileName = a.FileName,
-                            Base64Data = Convert.ToBase64String(buffer, 0, (int)memoryStream.Length),
-                            ContentType = a.ContentType.MimeType
-                        };
-                        data.Attachments.Add(aa);
-                    }
                 }
                 else
                 {
-                    MessagePart? rfc822 = entity as MessagePart;
-                    if (rfc822 != null)
+                    if (entity is MessagePart msgPart)
                     {
-                        using (var memoryStream = new MemoryStream())
+                        using var memoryStream = new MemoryStream();
+                        msgPart.Message.WriteTo(memoryStream);
+                        byte[] buffer = memoryStream.GetBuffer();
+                        var attachment = new
                         {
-                            rfc822.Message.WriteTo(memoryStream);
-                            byte[] buffer = memoryStream.GetBuffer();
-                            var aa = new 
-                            {
-                                FileName = rfc822.Message.Subject,
-                                Base64Data = Convert.ToBase64String(buffer, 0, (int)memoryStream.Length),
-                                ContentType = rfc822.ContentType.MimeType
-                            };
-                            data.Attachments.Add(aa);
-                        }
+                            FileName = msgPart.Message.Subject,
+                            Base64Data = Convert.ToBase64String(buffer, 0, (int)memoryStream.Length),
+                            ContentType = msgPart.ContentType.MimeType
+                        };
+                        data.Attachments.Add(attachment);
                     }
                 }
 
@@ -301,8 +293,8 @@ namespace WisePBX.NET8.Controllers
                     _setting =
                     (from m in _wisedb.EmailSettings
                      where m.Valid == "Y" && m.ProjectName == projectName
-                     && ((m.EmailType == "Junk Mail" && emailAddress.ToLower().Contains((m.EmailAddress.ToLower()))) ||
-                     (m.EmailType != "Junk Mail" && emailAddress.ToLower() == m.EmailAddress.ToLower()))
+                     && ((m.EmailType == "Junk Mail" && emailAddress.Contains(m.EmailAddress, StringComparison.OrdinalIgnoreCase)) ||
+                     (m.EmailType != "Junk Mail" && emailAddress.Equals(m.EmailAddress, StringComparison.OrdinalIgnoreCase)))
                      select m).ToList();
                 }
                 if (emailType != "")
@@ -349,16 +341,18 @@ namespace WisePBX.NET8.Controllers
                                 select m).SingleOrDefault();
                 if (_setting == null)
                 {
-                    _setting = new EmailSetting();
-                    _setting.ProjectName = projectName;
-                    _setting.EmailAddress = emailAddress;
-                    _setting.EmailType = emailType;
-                    _setting.FullName = fullName;
-                    _setting.Title = title;
-                    _setting.Remarks = remarks;
-                    _setting.UpdatedBy = agentId;
-                    _setting.UpdateDateTime = DateTime.Now;
-                    _setting.Valid = "Y";
+                    _setting = new EmailSetting
+                    {
+                        ProjectName = projectName,
+                        EmailAddress = emailAddress,
+                        EmailType = emailType,
+                        FullName = fullName,
+                        Title = title,
+                        Remarks = remarks,
+                        UpdatedBy = agentId,
+                        UpdateDateTime = DateTime.Now,
+                        Valid = "Y"
+                    };
                     _wisedb.EmailSettings.Add(_setting);
 
                 }
@@ -476,19 +470,19 @@ namespace WisePBX.NET8.Controllers
                      select m).ToList();
 
                 Regex _rgx = new Regex("\r?\n");
-                List<dynamic> _emailList=new List<dynamic>();
+                List<dynamic> _emailList=[];
                 foreach (MediaCall _mediaCall in _list)
                 {
                     string _file = (_mediaCall.Filename??"").Replace($@"\\{hostName}\", $@"{hostDrive}:\");
                     MimeMessage message = MimeMessage.Load(_file);
 
                     string _content = message.HtmlBody??message.TextBody;
-                    _content = _rgx.Replace(_content.Substring(0, Math.Min(100, _content.Length)), "<br/>");
+                    _content = _rgx.Replace(_content[..Math.Min(100, _content.Length)], "<br/>");
 
                     
                     var _email = new 
                     {
-                        CreateDateTime = _mediaCall.CreateDateTime,
+                        _mediaCall.CreateDateTime,
                         EmailID = _mediaCall.CallID,
                         From = message.From.Mailboxes.Single().Address,
                         To = message.To?.ToString(true) ?? "",

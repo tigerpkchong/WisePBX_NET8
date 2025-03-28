@@ -100,9 +100,9 @@ namespace WisePBX.NET8.Controllers
                     data.Add(new
                     {
                         CreateDateTime = System.IO.File.GetCreationTime(_fullfilePath).ToString("s"),
-                        FileName = _file.FileName,
+                        _file.FileName,
                         FilePath = _filePath,
-                        ContentType = _file.ContentType,
+                        _file.ContentType,
                         FileUrl = webUrl + "/Uploads/" + _tmpFolder + "/" + _file.FileName
 
                     });
@@ -116,7 +116,7 @@ namespace WisePBX.NET8.Controllers
         [HttpPost]
         public IActionResult RemoveAttachment([FromBody] JsonObject p)
         {
-            List<string> _folders = new List<string>();
+            List<string> _folders = [];
             var files = p["files"]?.GetValue<List<string>>();
             if (files != null)
             {

@@ -47,16 +47,16 @@ namespace WisePBX.NET8.Controllers
                             FileUrl = v.Filepath.Replace(@"\", @"/").Replace("//" + hostName + "/", webUrl +"/"),
                             TimeStamp = c.Begintime,
                             CallType = c.Calltype,
-                            DNIS = c.DNIS,
-                            ANI = c.ANI,
+                            c.DNIS,
+                            c.ANI,
                             TalkTime = c.Talktime
                         }).AsEnumerable().Select(x => new 
                         {
-                            FileName = x.FileName.Substring(x.FileName.LastIndexOf('\\') + 1),
-                            FileUrl = x.FileUrl,
-                            TimeStamp = x.TimeStamp,
+                            FileName = x.FileName[(x.FileName.LastIndexOf('\\') + 1)..],
+                            x.FileUrl,
+                            x.TimeStamp,
                             CallerDisplay = (x.CallType == 1) ? x.DNIS : x.ANI,
-                            TalkTime = x.TalkTime
+                            x.TalkTime
                         });
             if (!data.Any()) return Ok(new { result = strFail, details = strNoSuchRecord });
             return Ok(new { result = strSuccess, data });
@@ -162,13 +162,13 @@ namespace WisePBX.NET8.Controllers
                         {
                             CallId = x.CallID,
                             CallType = x.bOutbound + x.bInbound + x.bConference + x.bTransfer + x.bInterComm,
-                            FilePath = x.FilePath,
-                            FileName = x.FilePath.Substring(x.FilePath.LastIndexOf('\\') + 1),
-                            FileUrl = x.FileUrl,
-                            TimeStamp = x.TimeStamp,
+                            x.FilePath,
+                            FileName = x.FilePath[(x.FilePath.LastIndexOf('\\') + 1)..],
+                            x.FileUrl,
+                            x.TimeStamp,
                             PhoneNo = x.bOutbound != ""? x.DNIS : x.PhoneNo ,
                             StaffNo = x.dStaffNo + ((x.dStaffNo != "" && x.oStaffNo != "") ? "," : "") + x.oStaffNo,
-                            Duration = x.Duration,
+                            x.Duration,
 
                         }).ToList();
                 
@@ -229,10 +229,10 @@ namespace WisePBX.NET8.Controllers
                          && (serviceId == -1 || v.ServiceID == serviceId || (v.ServiceID == 0 && v.CallType == 3))
                          && (callType == -1 || v.CallType == callType)
                          && (phoneNo == "" || (v.PhoneNo??"").Contains(phoneNo))
-                         && (!agentId.Any() || agentId.Any(a => (v.AgentList??"").Contains(a)))
+                         && (agentId.Length==0 || agentId.Any(a => (v.AgentList??"").Contains(a)))
                          && (ani == "" || v.ANI == ani)
                          && (dnis == "" || v.DNIS == dnis)
-                         && (!callId.Any() || callId.Contains(v.CallID))
+                         && (callId.Length == 0 || callId.Contains(v.CallID))
                          orderby v.Begintime descending
 
                          select new
@@ -241,7 +241,7 @@ namespace WisePBX.NET8.Controllers
                              ServiceName = o.ServiceDesc,
                              TimeStamp = v.Begintime,
                              CallType = v.CallTypeEx,
-                             PhoneNo = v.PhoneNo,
+                             v.PhoneNo,
                              Duration = v.Talktime,
                              StaffNo = (v.AgentList ?? "").Replace("|", ""),
                              FilePaths = v.Filepath,
@@ -257,7 +257,7 @@ namespace WisePBX.NET8.Controllers
                         {
                             FilePath = ar,
                             FileUrl = ar.Replace(@"\", @"/").Replace("//" + hostName + "/", webUrl + "/"),
-                            FileName = ar.Substring(ar.LastIndexOf('\\') + 1),
+                            FileName = ar[(ar.LastIndexOf('\\') + 1)..],
                         };
                         x.VoiceFiles.Add(_voiceFile);
                     });
@@ -274,7 +274,7 @@ namespace WisePBX.NET8.Controllers
         }
 
         [HttpPost]
-        public IActionResult GetAgentList([FromBody] JsonObject p)
+        public IActionResult GetAgentList()
         {
             try
             {

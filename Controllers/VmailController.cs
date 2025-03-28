@@ -66,7 +66,7 @@ namespace WisePBX.NET8.Controllers
                               select m).ToList();
 
 
-            List<dynamic> data = new List<dynamic>();
+            List<dynamic> data = [];
             foreach (MediaCall _mediaCall in _mediaList)
             {
                 string file = _mediaCall.Filename ?? "";
@@ -77,10 +77,10 @@ namespace WisePBX.NET8.Controllers
 
                 data.Add(new 
                 {
-                    CreateDateTime = _mediaCall.CreateDateTime,
+                    _mediaCall.CreateDateTime,
                     VmailID = _mediaCall.CallID,
                     CallerDisplay = _mediaCall.ANI,
-                    Subject = _mediaCall.Subject,
+                    _mediaCall.Subject,
                     FilePath = file
                 });
             }

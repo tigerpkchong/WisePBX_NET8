@@ -89,7 +89,7 @@ namespace WisePBX.NET8.Controllers
 
                 data.Add(new 
                 {
-                    CreateDateTime = _medialCall.CreateDateTime,
+                    _medialCall.CreateDateTime,
                     FaxID = _medialCall.CallID,
                     CallerDisplay = _medialCall.ANI,
                     FilePath = _file

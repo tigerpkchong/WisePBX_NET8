@@ -22,7 +22,7 @@ namespace WisePBX.NET8.Controllers
         }
 
         [HttpPost]
-        public IActionResult GetServiceList([FromBody] JsonObject p)
+        public IActionResult GetServiceList()
         {
             try
             {
@@ -175,15 +175,15 @@ namespace WisePBX.NET8.Controllers
                                    AbandonedCall = g.Sum(x => x.AbandonedCall),
                                    OutboundCall = g.Sum(x => x.OutboundCall),
                                    PctAnsweredCall = (g.Sum(x => x.IncomingCall) == 0) ? 0 :
-                                        (int)Math.Round((double)g.Sum(x => x.AnsweredCall) / (double)g.Sum(x => x.IncomingCall) * 100),
+                                        (int)Math.Round((double)g.Sum(x => x.AnsweredCall??0) / (double)g.Sum(x => x.IncomingCall??0) * 100),
                                    PctAbandonedCall = (g.Sum(x => x.IncomingCall) == 0) ? 0 :
-                                        (int)Math.Round((double)g.Sum(x => x.AbandonedCall) / (double)g.Sum(x => x.IncomingCall) * 100),
+                                        (int)Math.Round((double)g.Sum(x => x.AbandonedCall ?? 0) / (double)g.Sum(x => x.IncomingCall ?? 0) * 100),
                                    AvgAbandonedTime = (g.Sum(x => x.AbandonedCall) == 0) ? 0 :
-                                        (int)Math.Round((double)g.Sum(x => x.AbandonedTime) / (double)g.Sum(x => x.AbandonedCall)),
+                                        (int)Math.Round((double)g.Sum(x => x.AbandonedTime ?? 0) / (double)g.Sum(x => x.AbandonedCall ?? 0)),
                                    AvgTalkTime = (g.Sum(x => x.AnsweredCall) + g.Sum(x => x.OutboundCall) == 0) ? 0 :
-                                        (int)Math.Round((double)(g.Sum(x => x.AnsweredTalkTime) + g.Sum(x => x.OutboundTalkTime)) / (double)(g.Sum(x => x.AnsweredCall) + g.Sum(x => x.OutboundCall))),
+                                        (int)Math.Round((double)(g.Sum(x => x.AnsweredTalkTime ?? 0) + g.Sum(x => x.OutboundTalkTime ?? 0)) / (double)(g.Sum(x => x.AnsweredCall) + g.Sum(x => x.OutboundCall))),
                                    AvgAnsweredTime = (g.Sum(x => x.AnsweredCall) == 0) ? 0 :
-                                        (int)Math.Round((double)g.Sum(x => x.AnsweredWaitTime) / (double)g.Sum(x => x.AnsweredCall)),
+                                        (int)Math.Round((double)g.Sum(x => x.AnsweredWaitTime ?? 0) / (double)g.Sum(x => x.AnsweredCall ?? 0)),
                                }).SingleOrDefault();
                 var acdGroup = (from s in _wisedb.Monitor_Statistics
                                 where s.ServiceID == serviceId && s.ACDGroupID == groupId &&
@@ -239,7 +239,7 @@ namespace WisePBX.NET8.Controllers
                                 {
                                     a.AcdGroupID,
                                     a.AcdGroupDesc,
-                                    Accessible = (g != null) ? true : false,
+                                    Accessible = g != null ,
                                 }).ToList();
 
                     return Ok(new { result = "success", data });
@@ -300,7 +300,7 @@ namespace WisePBX.NET8.Controllers
                             {
                                 a.AcdGroupID,
                                 a.AcdGroupDesc,
-                                Accessible = (g != null) ? true : false,
+                                Accessible = g != null,
                             }).ToList();
                 return Ok(new { result = "success", data });
             }
@@ -379,7 +379,7 @@ namespace WisePBX.NET8.Controllers
         }
 
         [HttpPost]
-        public IActionResult GetDashboardData([FromBody] JsonObject p)
+        public IActionResult GetDashboardData()
         {
             try
             {
@@ -399,7 +399,7 @@ namespace WisePBX.NET8.Controllers
 
                 List<string[]> days30_list = data.Select(d => new string[2]
                 {
-                    d.time_stamp.DayOfWeek.ToString().Substring(0,1),
+                    d.time_stamp.DayOfWeek.ToString()[..1],
                     d.time_stamp.ToString("M/d")
                 }).ToList();
 
