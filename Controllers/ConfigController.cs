@@ -214,12 +214,12 @@ namespace WisePBX.NET8.Controllers
                 if (p["agentId"] == null)
                 {
                     var _list = (from a in _wisedb.ACDGroups orderby a.AcdGroupID select a).ToList();
-                    return Ok(new { result = WiseResult.Success, data = _list });
+                    return Ok(new { result = WiseResult.Success, data = _list, function = "GetACDGroupAccessList" });
                 }
                 else
                 {
                     bool isAgent = (from a in _wisedb.AgentInfos where a.AgentID == agentId select a).Any();
-                    if (!isAgent) return Ok(new { result = WiseResult.Fail, details = "No such agent." });
+                    if (!isAgent) return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchAgent, function = "GetACDGroupAccessList" });
 
                     var data = (from a in _wisedb.ACDGroups
                                 join g in _wisedb.ACDGroup_Accesses on a.AcdGroupID equals g.AcdGroupID into ps
@@ -252,7 +252,7 @@ namespace WisePBX.NET8.Controllers
             {
 
                 bool isAgent = (from a in _wisedb.AgentInfos where a.AgentID == agentId select a).Any();
-                if (!isAgent) return Ok(new { result = WiseResult.Fail, details = "No such agent." });
+                if (!isAgent) return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchAgent, function = "UpdateACDGroupAccessList" });
 
                 List<AcdGroupAccessClass> setting = p["setting"]?.GetValue<List<AcdGroupAccessClass>>() ?? [];
 
@@ -309,10 +309,10 @@ namespace WisePBX.NET8.Controllers
             try
             {
                 bool isAgent = (from a in _wisedb.AgentInfos where a.AgentID == agentId select a).Any();
-                if (!isAgent) return Ok(new { result = WiseResult.Fail, details = "No such agent." });
+                if (!isAgent) return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchAgent, function = "AddACDGroupAccess" });
 
                 bool isGroup = (from a in _wisedb.ACDGroupMembers where a.ACDGroupID == groupId select a).Any();
-                if (!isGroup) return Ok(new { result = WiseResult.Fail, details = "No such ACD Group." });
+                if (!isGroup) return Ok(new { result = WiseResult.Fail, details = "No such ACD Group.", function = "AddACDGroupAccess" });
 
                 var data = (from a in _wisedb.ACDGroup_Accesses
                             where a.AgentID == agentId && a.AcdGroupID == groupId
@@ -344,10 +344,10 @@ namespace WisePBX.NET8.Controllers
             try
             {
                 bool isAgent = (from a in _wisedb.AgentInfos where a.AgentID == agentId select a).Any();
-                if (!isAgent) return Ok(new { result = WiseResult.Fail, details = "No such agent." });
+                if (!isAgent) return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchAgent, function = "DelACDGroupAccess" });
 
                 bool isGroup = (from a in _wisedb.ACDGroupMembers where a.ACDGroupID == groupId select a).Any();
-                if (!isGroup) return Ok(new { result = WiseResult.Fail, details = "No such ACD Group." });
+                if (!isGroup) return Ok(new { result = WiseResult.Fail, details = "No such ACD Group.", function = "DelACDGroupAccess" });
 
                 var data = (from a in _wisedb.ACDGroup_Accesses
                             where a.AgentID == agentId && a.AcdGroupID == groupId
@@ -356,7 +356,7 @@ namespace WisePBX.NET8.Controllers
 
                 _wisedb.ACDGroup_Accesses.Remove(data);
                 _wisedb.SaveChanges();
-                return Ok(new { result = WiseResult.Success });
+                return Ok(new { result = WiseResult.Success, function = "DelACDGroupAccess" });
             }
             catch (Exception e)
             {
