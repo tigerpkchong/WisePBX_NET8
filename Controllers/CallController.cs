@@ -56,11 +56,6 @@ namespace WisePBX.NET8.Controllers
         [HttpPost]
         public IActionResult GetVoiceMail([FromBody] JsonObject p)
         {
-            if (p == null) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
-
-            if (p["startDate"] == null) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
-            if (p["endDate"] == null) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
-            
             DateTime startDate = Convert.ToDateTime((p["startDate"]??"").ToString());
             DateTime endDate = Convert.ToDateTime((p["endDate"] ?? "").ToString()).AddDays(1);
             
@@ -108,12 +103,6 @@ namespace WisePBX.NET8.Controllers
         {
             try
             {
-                if (p == null) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
-
-                if (p["startDate"] == null) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
-                if (p["endDate"] == null) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
-
-
                 DateTime startDate = Convert.ToDateTime((p["startDate"] ?? "").ToString());
                 DateTime endDate = Convert.ToDateTime((p["endDate"] ?? "").ToString()).AddDays(1);
 
@@ -178,8 +167,6 @@ namespace WisePBX.NET8.Controllers
         {
             try
             {
-                if (p == null) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
-                
                 DateTime startDate = (p["startDate"] == null) ? DateTime.Today : Convert.ToDateTime(p["startDate"]?.ToString());
                 DateTime endDate = (p["endDate"] == null) ? DateTime.Today.AddDays(1) : (Convert.ToDateTime(p["endDate"]?.ToString())).AddDays(1);
                 int serviceId = (p["serviceId"] == null) ? -1 : Convert.ToInt32((p["serviceId"]??"-1").ToString());
@@ -291,7 +278,6 @@ namespace WisePBX.NET8.Controllers
         {
             try
             {
-                if (p == null) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
                 int agentId = Convert.ToInt32((p["agentId"]??"-1").ToString());
                 if (agentId == -1) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
 
@@ -316,7 +302,6 @@ namespace WisePBX.NET8.Controllers
         {
             try
             {
-                if (p == null) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
                 string serviceName = (p["serviceName"]??"").ToString();
 
                 if (serviceName == "")
