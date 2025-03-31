@@ -12,7 +12,7 @@ namespace WisePBX.NET8.Controllers
         : WiseBaseController(wiseEntities)
     {
         private readonly string hostName = iConfig.GetValue<string>("HostName") ?? "";
-private readonly WiseEntities _wisedb = wiseEntities;
+        private readonly WiseEntities _wisedb = wiseEntities;
 
         [HttpPost]
         [ActionName("GetCount")]
