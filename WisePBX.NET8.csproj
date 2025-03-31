@@ -20,6 +20,12 @@
 
   <ItemGroup>
     <Compile Remove="Controllers\WeatherForecastController.cs" />
+    <Compile Remove="Models\Wise\AcdgroupAccess.cs" />
+    <Compile Remove="Models\Wise\EmailSettingLog.cs" />
+    <Compile Remove="Models\Wise\MediaCallActionLog.cs" />
+    <Compile Remove="Models\Wise\MonitorStatistic.cs" />
+    <Compile Remove="Models\Wise\ServiceAcdgroup.cs" />
+    <Compile Remove="Models\Wise\VwFullVoiceLog.cs" />
   </ItemGroup>
 
   <ItemGroup>
