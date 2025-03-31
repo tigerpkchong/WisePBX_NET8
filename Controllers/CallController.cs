@@ -12,7 +12,7 @@ namespace WisePBX.NET8.Controllers
     [Route("api/[controller]/[action]")]
     
     public class CallController(IConfiguration iConfig, WiseEntities wiseEntities) 
-        : _MediaController(wiseEntities)
+        : WiseBaseController(wiseEntities)
     {
         private readonly string strSuccess = "success";
         private readonly string strFail = "fail";

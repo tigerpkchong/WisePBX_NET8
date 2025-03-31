@@ -21,7 +21,7 @@ namespace WisePBX.NET8.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class EmailController : _MediaController
+    public class EmailController : WiseBaseController
     {
         private readonly string strSuccess = "success";
         private readonly string strFail = "fail";

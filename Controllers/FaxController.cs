@@ -9,7 +9,7 @@ namespace WisePBX.NET8.Controllers
     [Route("api/[controller]/[action]")]
     [ApiController]
     public class FaxController(IConfiguration iConfig, WiseEntities wiseEntities) 
-        : _MediaController(wiseEntities)
+        : WiseBaseController(wiseEntities)
     {
         private readonly string strInvalidParameters = "Invalid Parameters.";
         private readonly string strNoSuchRecord = "No such record.";

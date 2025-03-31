@@ -1,13 +1,14 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualBasic;
+using System.Text;
 using WisePBX.NET8.Models.Wise;
 
 namespace WisePBX.NET8.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class _MediaController(WiseEntities wiseEntities) : ControllerBase
+    public class WiseBaseController(WiseEntities wiseEntities) : ControllerBase
     {
         private readonly string strSuccess = "success";
         private readonly string strFail = "fail";
@@ -30,17 +31,17 @@ namespace WisePBX.NET8.Controllers
                                                where mediaIds.Contains(m.CallID) && m.CallType == callType //&& m.AgentID != 0
                                                select m).AsEnumerable();
             if (!_medialCallList.Any()) return "";
-            string details = "";
+            StringBuilder details = new();
             foreach (var _m in _medialCallList)
             {
                 if (_m.IsHandleFinish == 1)
                 {
-                    if (details != "") details += " ,";
-                    details += string.Format("Record {0} was already handled", _m.CallID);
+                    if (details.Length != 0) details.Append(" ,");
+                    details.Append($"Record {_m.CallID} was already handled");
                 }
             }
 
-            return details;
+            return details.ToString();
         }
         [HttpPost]
         public IActionResult AssignAgent(int callType, List<int> mediaIds, int assignTo, int updatedBy)
