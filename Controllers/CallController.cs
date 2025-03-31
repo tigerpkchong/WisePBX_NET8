@@ -14,11 +14,6 @@ namespace WisePBX.NET8.Controllers
     public class CallController(IConfiguration iConfig, WiseEntities wiseEntities) 
         : WiseBaseController(wiseEntities)
     {
-        private readonly string strSuccess = "success";
-        private readonly string strFail = "fail";
-        private readonly string strInvalidParameters = "Invalid Parameters.";
-        private readonly string strNoSuchRecord = "No such record.";
-
         private readonly string hostDrive = iConfig.GetValue<string>("hostDrive") ?? "";
         private readonly string hostName = iConfig.GetValue<string>("HostName") ?? "";
 
@@ -28,7 +23,7 @@ namespace WisePBX.NET8.Controllers
         public IActionResult GetContent([FromBody] JsonObject p)
         {
             int id = Convert.ToInt32((p["id"]??"0").ToString());
-            if (id == 0) return Ok(new { result = strFail, details = strInvalidParameters });
+            if (id == 0) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
             string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
 
             var data = (from c in _wisedb.Calls
@@ -54,17 +49,17 @@ namespace WisePBX.NET8.Controllers
                             CallerDisplay = (x.CallType == 1) ? x.DNIS : x.ANI,
                             x.TalkTime
                         });
-            if (!data.Any()) return Ok(new { result = strFail, details = strNoSuchRecord });
-            return Ok(new { result = strSuccess, data });
+            if (!data.Any()) return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchRecord });
+            return Ok(new { result = WiseResult.Success, data });
         }
         
         [HttpPost]
         public IActionResult GetVoiceMail([FromBody] JsonObject p)
         {
-            if (p == null) return Ok(new { result = strFail, details = strInvalidParameters });
+            if (p == null) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
 
-            if (p["startDate"] == null) return Ok(new { result = strFail, details = strInvalidParameters });
-            if (p["endDate"] == null) return Ok(new { result = strFail, details = strInvalidParameters });
+            if (p["startDate"] == null) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
+            if (p["endDate"] == null) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
             
             DateTime startDate = Convert.ToDateTime((p["startDate"]??"").ToString());
             DateTime endDate = Convert.ToDateTime((p["endDate"] ?? "").ToString()).AddDays(1);
@@ -104,8 +99,8 @@ namespace WisePBX.NET8.Controllers
                             m.IvrsData,
                             m.ReadFlag,
                         }).AsEnumerable().Take(1000);
-            if (!data.Any()) return Ok(new { result = strFail, details = strNoSuchRecord });
-            return Ok(new { result = strSuccess, data });
+            if (!data.Any()) return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchRecord });
+            return Ok(new { result = WiseResult.Success, data });
         }
 
         [HttpPost]
@@ -113,10 +108,10 @@ namespace WisePBX.NET8.Controllers
         {
             try
             {
-                if (p == null) return Ok(new { result = strFail, details = strInvalidParameters });
+                if (p == null) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
 
-                if (p["startDate"] == null) return Ok(new { result = strFail, details = strInvalidParameters });
-                if (p["endDate"] == null) return Ok(new { result = strFail, details = strInvalidParameters });
+                if (p["startDate"] == null) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
+                if (p["endDate"] == null) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
 
 
                 DateTime startDate = Convert.ToDateTime((p["startDate"] ?? "").ToString());
@@ -125,7 +120,7 @@ namespace WisePBX.NET8.Controllers
                 int agentId = Convert.ToInt32((p["agentId"]??"-1").ToString());
                 string phoneNo = (p["phoneNo"]??"").ToString();
                 
-                if (phoneNo != "" && phoneNo.Length < 8) return Ok(new { result = strFail, details = strInvalidParameters });
+                if (phoneNo != "" && phoneNo.Length < 8) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
 
                 string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
 
@@ -169,12 +164,12 @@ namespace WisePBX.NET8.Controllers
                         }).ToList();
                 
                 
-                if (data.Count == 0) return Ok(new { result = strFail, details = strNoSuchRecord });
-                return Ok(new { result = strSuccess, data });
+                if (data.Count == 0) return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchRecord });
+                return Ok(new { result = WiseResult.Success, data });
             }
             catch (Exception e)
             {
-                return Ok(new { result = strFail, data = e.Message });
+                return Ok(new { result = WiseResult.Fail, data = e.Message });
             }
 
         }
@@ -183,7 +178,7 @@ namespace WisePBX.NET8.Controllers
         {
             try
             {
-                if (p == null) return Ok(new { result = strFail, details = strInvalidParameters });
+                if (p == null) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
                 
                 DateTime startDate = (p["startDate"] == null) ? DateTime.Today : Convert.ToDateTime(p["startDate"]?.ToString());
                 DateTime endDate = (p["endDate"] == null) ? DateTime.Today.AddDays(1) : (Convert.ToDateTime(p["endDate"]?.ToString())).AddDays(1);
@@ -212,7 +207,7 @@ namespace WisePBX.NET8.Controllers
                     else
                         callId = [p!["callId"]!.GetValue<int>()];
                 }
-                if (phoneNo != "" && phoneNo.Length < 8) return Ok(new { result = strFail, details = strInvalidParameters });
+                if (phoneNo != "" && phoneNo.Length < 8) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
 
                 string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
 
@@ -259,12 +254,12 @@ namespace WisePBX.NET8.Controllers
                     });
                 });
                 
-                if (data.Count == 0) return Ok(new { result = strFail, details = strNoSuchRecord });
-                return Ok(new { result = strSuccess, data });
+                if (data.Count == 0) return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchRecord });
+                return Ok(new { result = WiseResult.Success, data });
             }
             catch (Exception e)
             {
-                return Ok(new { result = strFail, data = e.Message });
+                return Ok(new { result = WiseResult.Fail, data = e.Message });
             }
 
         }
@@ -281,11 +276,11 @@ namespace WisePBX.NET8.Controllers
                                 i.AgentID,
                                 i.AgentName
                             }).ToList();
-                return Ok(new { result = strSuccess, data });
+                return Ok(new { result = WiseResult.Success, data });
             }
             catch (Exception e)
             {
-                return Ok(new { result = strFail, data = e.Message });
+                return Ok(new { result = WiseResult.Fail, data = e.Message });
             }
         }
 
@@ -296,9 +291,9 @@ namespace WisePBX.NET8.Controllers
         {
             try
             {
-                if (p == null) return Ok(new { result = strFail, details = strInvalidParameters });
+                if (p == null) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
                 int agentId = Convert.ToInt32((p["agentId"]??"-1").ToString());
-                if (agentId == -1) return Ok(new { result = strFail, details = strInvalidParameters });
+                if (agentId == -1) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
 
                 var info = (from i in _wisedb.AgentInfos
                             where i.AgentID == agentId
@@ -308,11 +303,11 @@ namespace WisePBX.NET8.Controllers
                                  where g.AgentID == agentId
                                  orderby g.ACDGroupID
                                  select g.ACDGroupID).ToList();
-                return Ok(new { result = strSuccess, data = new { info, acdGroups } });
+                return Ok(new { result = WiseResult.Success, data = new { info, acdGroups } });
             }
             catch (Exception e)
             {
-                return Ok(new { result = strFail, data = e.Message });
+                return Ok(new { result = WiseResult.Fail, data = e.Message });
             }
         }
 
@@ -321,23 +316,23 @@ namespace WisePBX.NET8.Controllers
         {
             try
             {
-                if (p == null) return Ok(new { result = strFail, details = strInvalidParameters });
+                if (p == null) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
                 string serviceName = (p["serviceName"]??"").ToString();
 
                 if (serviceName == "")
-                    return Ok(new { result = strFail, details = strInvalidParameters });
+                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
 
                 var data = (from i in _wisedb.OutboundANIs
                             where i.ServiceName == serviceName &&
                             i.OutboundType == "call"
                             select i.ANI).SingleOrDefault();
                 if (data == null)
-                    return Ok(new { result = strFail, details = strNoSuchRecord });
-                return Ok(new { result = strSuccess, data });
+                    return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchRecord });
+                return Ok(new { result = WiseResult.Success, data });
             }
             catch (Exception e)
             {
-                return Ok(new { result = strFail, data = e.Message });
+                return Ok(new { result = WiseResult.Fail, data = e.Message });
             }
         }
     }
