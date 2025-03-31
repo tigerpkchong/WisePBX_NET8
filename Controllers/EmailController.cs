@@ -218,7 +218,7 @@ namespace WisePBX.NET8.Controllers
 
                 if (link != "" && !link.StartsWith($@"{webUrl}/Uploads/"))
                 {
-                    return Ok(new { result = WiseResult.Fail, details = "Invalid Link Parameters.", , function = "Email:UploadContent" });
+                    return Ok(new { result = WiseResult.Fail, details = "Invalid Link Parameters.", function = "Email:UploadContent" });
                 }
 
                 string _tmpFolder = DateTime.Today.ToString("yyyyMMdd");
