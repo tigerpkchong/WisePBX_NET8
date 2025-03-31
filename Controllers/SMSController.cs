@@ -6,13 +6,9 @@ namespace WisePBX.NET8.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class SMSController : ControllerBase
+    public class SMSController(WiseEntities wiseEntities) : ControllerBase
     {
-        private readonly WiseEntities _wisedb;
-        public SMSController(WiseEntities entities) 
-        {
-            _wisedb = entities;
-        }
+        private readonly WiseEntities _wisedb= wiseEntities;
 
         [HttpPost]
         public IActionResult GetContent([FromBody] dynamic p)

@@ -8,21 +8,15 @@ namespace WisePBX.NET8.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class FaxController : _MediaController
+    public class FaxController(IConfiguration iConfig, WiseEntities wiseEntities) 
+        : _MediaController(wiseEntities)
     {
         private readonly string strInvalidParameters = "Invalid Parameters.";
         private readonly string strNoSuchRecord = "No such record.";
 
-        private readonly string hostName;
+        private readonly string hostName = iConfig.GetValue<string>("HostName") ?? "";
 
-        private readonly WiseEntities _wisedb;
-
-        public FaxController(IConfiguration iConfig, WiseEntities wiseEntities)
-            : base(wiseEntities)
-        {
-            hostName = iConfig.GetValue<string>("HostName") ?? "";
-            _wisedb = wiseEntities;
-        }
+        private readonly WiseEntities _wisedb = wiseEntities;
 
         [HttpPost]
         [ActionName("GetCount")]

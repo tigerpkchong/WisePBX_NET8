@@ -9,27 +9,19 @@ namespace WisePBX.NET8.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class VmailController : _MediaController
+    public class VmailController(IConfiguration iConfig, WiseEntities wiseEntities) 
+        : _MediaController(wiseEntities)
     {
         private readonly string strSuccess = "success";
         private readonly string strFail = "fail";
         private readonly string strInvalidParameters = "Invalid Parameters.";
         private readonly string strNoSuchRecord = "No such record.";
 
-        private readonly string hostDrive;
-        private readonly string hostName;
-        private readonly string hostAddress;
+        private readonly string hostDrive = iConfig.GetValue<string>("hostDrive") ?? "";
+        private readonly string hostName = iConfig.GetValue<string>("HostName") ?? "";
+        private readonly string hostAddress = iConfig.GetValue<string>("HostAddress") ?? "";
 
-        private readonly WiseEntities _wisedb;
-        public VmailController(IConfiguration iConfig, WiseEntities wiseEntities)
-            :base(wiseEntities)
-        {
-            _wisedb = wiseEntities;
-            hostDrive = iConfig.GetValue<string>("hostDrive") ?? "";
-            hostName = iConfig.GetValue<string>("HostName") ?? "";
-            hostAddress = iConfig.GetValue<string>("HostAddress") ?? "";
-            
-        }
+        private readonly WiseEntities _wisedb = wiseEntities;
 
         [HttpPost]
         [ActionName("GetCount")]

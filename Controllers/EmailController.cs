@@ -110,7 +110,7 @@ namespace WisePBX.NET8.Controllers
 
             
             string _file = _mediaCall.Filename??"";
-            Regex _rgx = new Regex("\r?\n");
+            Regex _rgx = new("\r?\n");
             MimeMessage message = MimeMessage.Load(_file);
             string _content = message.HtmlBody??_rgx.Replace(message.TextBody, "<br/>");
             DateTime _timestamp = (_mediaCall.CallType == 12) ? message.Date.LocalDateTime : 
@@ -282,12 +282,12 @@ namespace WisePBX.NET8.Controllers
 
                 string emailAddress = (p["emailAddress"] ?? "").ToString();
 
-                List<EmailSetting>? _setting=null;
+                IEnumerable<EmailSetting>? _setting=null;
                 if (emailAddress == "")
                     _setting =
                     (from m in _wisedb.EmailSettings
                      where m.Valid == "Y" && m.ProjectName == projectName
-                     select m).ToList();
+                     select m).AsEnumerable();
                 else
                 {
                     _setting =
@@ -295,10 +295,10 @@ namespace WisePBX.NET8.Controllers
                      where m.Valid == "Y" && m.ProjectName == projectName
                      && ((m.EmailType == "Junk Mail" && emailAddress.Contains(m.EmailAddress, StringComparison.OrdinalIgnoreCase)) ||
                      (m.EmailType != "Junk Mail" && emailAddress.Equals(m.EmailAddress, StringComparison.OrdinalIgnoreCase)))
-                     select m).ToList();
+                     select m).AsEnumerable();
                 }
                 if (emailType != "")
-                    _setting = _setting.Where(x => x.EmailType == emailType).ToList();
+                    _setting = _setting.Where(x => x.EmailType == emailType).AsEnumerable();
                 return Ok(new { result = strSuccess, data = _setting });
             }
             catch (Exception ex)
@@ -469,7 +469,7 @@ namespace WisePBX.NET8.Controllers
                      where l.Project == projectName && l.Action == "Junk Mail"
                      select m).ToList();
 
-                Regex _rgx = new Regex("\r?\n");
+                Regex _rgx = new("\r?\n");
                 List<dynamic> _emailList=[];
                 foreach (MediaCall _mediaCall in _list)
                 {

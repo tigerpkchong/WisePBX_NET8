@@ -7,17 +7,13 @@ namespace WisePBX.NET8.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class _MediaController : ControllerBase
+    public class _MediaController(WiseEntities wiseEntities) : ControllerBase
     {
         private readonly string strSuccess = "success";
         private readonly string strFail = "fail";
 
-        private readonly WiseEntities _wisedb;
-        public _MediaController(WiseEntities wiseEntities) 
-        {
-            _wisedb = wiseEntities;
-        }
-
+        private readonly WiseEntities _wisedb = wiseEntities;
+        
         [HttpPost]
         public IActionResult GetCount(int callType, int agentId, string dnis, int handled)
         {

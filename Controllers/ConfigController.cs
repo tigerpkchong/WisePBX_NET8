@@ -10,17 +10,9 @@ namespace WisePBX.NET8.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class ConfigController : ControllerBase
+    public class ConfigController(WiseEntities _wisedb, WiseSPEntities _wiseSPdb) 
+        : ControllerBase
     {
-        private readonly WiseEntities _wisedb;
-        private readonly WiseSPEntities _wiseSPdb;
-
-        public ConfigController(WiseEntities entities, WiseSPEntities entitiesSP) 
-        {
-            _wisedb = entities;
-            _wiseSPdb = entitiesSP;
-        }
-
         [HttpPost]
         public IActionResult GetServiceList()
         {
