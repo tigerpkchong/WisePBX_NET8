@@ -27,11 +27,11 @@ namespace WisePBX.NET8.Controllers
                                 i.ServiceID,
                                 i.ServiceDesc
                             }).ToList();
-                return Ok(new { result = WiseResult.Success, data, function = "GetServiceList" });
+                return Ok(new { result = WiseResult.Success, data, function = WiseFunc.Config.GetServiceList });
             }
             catch (Exception e)
             {
-                return Ok(new { result = WiseResult.Fail, data = e.Message, function = "GetServiceList" });
+                return Ok(new { result = WiseResult.Fail, data = e.Message, function = WiseFunc.Config.GetServiceList });
             }
         }
 
@@ -56,11 +56,11 @@ namespace WisePBX.NET8.Controllers
                 if (serviceId == -1)
                     data = data.GroupBy(e => e.AcdGroupID).Select(g => g.First()).ToList(); // Distinct ACD Group
 
-                return Ok(new { result = WiseResult.Success, data, function = "GetACDGroupList" });
+                return Ok(new { result = WiseResult.Success, data, function = WiseFunc.Config.GetACDGroupList });
             }
             catch (Exception e)
             {
-                return Ok(new { result = WiseResult.Fail, data = e.Message, function = "GetACDGroupList" });
+                return Ok(new { result = WiseResult.Fail, data = e.Message, function = WiseFunc.Config.GetACDGroupList });
             }
         }
 
@@ -79,11 +79,11 @@ namespace WisePBX.NET8.Controllers
                                 i.AgentID,
                                 i.AgentName
                             }).ToList();
-                return Ok(new { result = WiseResult.Success, data, function = "GetAgentList" });
+                return Ok(new { result = WiseResult.Success, data, function = WiseFunc.Config.GetAgentList });
             }
             catch (Exception e)
             {
-                return Ok(new { result = WiseResult.Fail, data = e.Message, function = "GetAgentList" });
+                return Ok(new { result = WiseResult.Fail, data = e.Message, function = WiseFunc.Config.GetAgentList });
             }
         }
 
@@ -93,7 +93,7 @@ namespace WisePBX.NET8.Controllers
             try
             {
                 if (p == null || p["agentIds"] == null) 
-                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function= "GetSupervisorList" });
+                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = WiseFunc.Config.GetSupervisorList});
                 
                 List<int>? agentIds = p["agentIds"]?.GetValue<List<int>>() ?? [];
                 
@@ -107,11 +107,11 @@ namespace WisePBX.NET8.Controllers
                                 i.AgentName,
                                 i.LevelID
                             }).ToList();
-                return Ok(new { result = WiseResult.Success, data, function = "GetSupervisorList" });
+                return Ok(new { result = WiseResult.Success, data, function = WiseFunc.Config.GetSupervisorList });
             }
             catch (Exception e)
             {
-                return Ok(new { result = WiseResult.Fail, data = e.Message, function = "GetSupervisorList" });
+                return Ok(new { result = WiseResult.Fail, data = e.Message, function = WiseFunc.Config.GetSupervisorList });
             }
         }
 
@@ -121,7 +121,7 @@ namespace WisePBX.NET8.Controllers
             try
             {
                 int agentId = Convert.ToInt32((p["agentId"]??"-1").ToString());
-                if (agentId == -1) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = "GetAgentInfo" });
+                if (agentId == -1) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = WiseFunc.Config.GetAgentInfo });
 
                 var info = (from i in _wisedb.AgentInfos
                             where i.AgentID == agentId
@@ -131,11 +131,11 @@ namespace WisePBX.NET8.Controllers
                                  where g.AgentID == agentId
                                  orderby g.ACDGroupID
                                  select g.ACDGroupID).ToList();
-                return Ok(new { result = WiseResult.Success, data = new { info, acdGroups }, function = "GetAgentInfo" });
+                return Ok(new { result = WiseResult.Success, data = new { info, acdGroups }, function = WiseFunc.Config.GetAgentInfo });
             }
             catch (Exception e)
             {
-                return Ok(new { result = WiseResult.Fail, data = e.Message, function = "GetAgentInfo" });
+                return Ok(new { result = WiseResult.Fail, data = e.Message, function = WiseFunc.Config.GetAgentInfo });
             }
         }
         [HttpPost]
@@ -147,7 +147,7 @@ namespace WisePBX.NET8.Controllers
                 int groupId = Convert.ToInt32((p["groupId"] ?? "-1").ToString());
 
                 if (serviceId == -1 || groupId == -1) 
-                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function= "GetMonitorStatistics" });
+                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function= WiseFunc.Config.GetMonitorStatistics });
 
                 string? _grpType = (from a in _wisedb.Service_ACDGroups
                                    where a.ServiceID == serviceId &&
@@ -199,14 +199,14 @@ namespace WisePBX.NET8.Controllers
             }
             catch (Exception e)
             {
-                return Ok(new { result = WiseResult.Fail, data = e.Message, function = "GetMonitorStatistics" });
+                return Ok(new { result = WiseResult.Fail, data = e.Message, function = WiseFunc.Config.GetMonitorStatistics });
             }
         }
 
         [HttpPost]
         public IActionResult GetACDGroupAccessList([FromBody] JsonObject p)
         {
-            if (p == null) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = "GetACDGroupAccessList" });
+            if (p == null) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = WiseFunc.Config.GetACDGroupAccessList });
             int agentId = Convert.ToInt32((p["agentId"] ?? "-1").ToString());
             
             try
@@ -214,12 +214,12 @@ namespace WisePBX.NET8.Controllers
                 if (p["agentId"] == null)
                 {
                     var _list = (from a in _wisedb.ACDGroups orderby a.AcdGroupID select a).ToList();
-                    return Ok(new { result = WiseResult.Success, data = _list, function = "GetACDGroupAccessList" });
+                    return Ok(new { result = WiseResult.Success, data = _list, function = WiseFunc.Config.GetACDGroupAccessList });
                 }
                 else
                 {
                     bool isAgent = (from a in _wisedb.AgentInfos where a.AgentID == agentId select a).Any();
-                    if (!isAgent) return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchAgent, function = "GetACDGroupAccessList" });
+                    if (!isAgent) return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchAgent, function = WiseFunc.Config.GetACDGroupAccessList });
 
                     var data = (from a in _wisedb.ACDGroups
                                 join g in _wisedb.ACDGroup_Accesses on a.AcdGroupID equals g.AcdGroupID into ps
@@ -232,12 +232,12 @@ namespace WisePBX.NET8.Controllers
                                     Accessible = g != null ,
                                 }).ToList();
 
-                    return Ok(new { result = WiseResult.Success, data, function = "GetACDGroupAccessList" });
+                    return Ok(new { result = WiseResult.Success, data, function = WiseFunc.Config.GetACDGroupAccessList });
                 }
             }
             catch (Exception e)
             {
-                return Ok(new { result = WiseResult.Fail, data = e.Message, function = "GetACDGroupAccessList" });
+                return Ok(new { result = WiseResult.Fail, data = e.Message, function = WiseFunc.Config.GetACDGroupAccessList });
             }
         }
 
@@ -246,13 +246,13 @@ namespace WisePBX.NET8.Controllers
         {
             int agentId = Convert.ToInt32((p["agentId"] ?? "-1").ToString());
             if (agentId == -1 || p["setting"] == null) 
-                return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function= "UpdateACDGroupAccessList" });
+                return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function= WiseFunc.Config.UpdateACDGroupAccessList });
             
             try
             {
 
                 bool isAgent = (from a in _wisedb.AgentInfos where a.AgentID == agentId select a).Any();
-                if (!isAgent) return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchAgent, function = "UpdateACDGroupAccessList" });
+                if (!isAgent) return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchAgent, function = WiseFunc.Config.UpdateACDGroupAccessList });
 
                 List<AcdGroupAccessClass> setting = p["setting"]?.GetValue<List<AcdGroupAccessClass>>() ?? [];
 
@@ -290,11 +290,11 @@ namespace WisePBX.NET8.Controllers
                                 a.AcdGroupDesc,
                                 Accessible = g != null,
                             }).ToList();
-                return Ok(new { result = WiseResult.Success, data, function = "UpdateACDGroupAccessList" });
+                return Ok(new { result = WiseResult.Success, data, function = WiseFunc.Config.UpdateACDGroupAccessList });
             }
             catch (Exception e)
             {
-                return Ok(new { result = WiseResult.Fail, data = e.Message, function = "UpdateACDGroupAccessList" });
+                return Ok(new { result = WiseResult.Fail, data = e.Message, function = WiseFunc.Config.UpdateACDGroupAccessList });
             }
         }
 
@@ -304,15 +304,15 @@ namespace WisePBX.NET8.Controllers
             int agentId = Convert.ToInt32((p["agentId"] ?? "-1").ToString());
             int groupId = Convert.ToInt32((p["groupId"] ?? "-1").ToString());
             if (agentId == -1 || groupId == -1) 
-                return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = "AddACDGroupAccess" });
+                return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = WiseFunc.Config.AddACDGroupAccess });
             
             try
             {
                 bool isAgent = (from a in _wisedb.AgentInfos where a.AgentID == agentId select a).Any();
-                if (!isAgent) return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchAgent, function = "AddACDGroupAccess" });
+                if (!isAgent) return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchAgent, function = WiseFunc.Config.AddACDGroupAccess });
 
                 bool isGroup = (from a in _wisedb.ACDGroupMembers where a.ACDGroupID == groupId select a).Any();
-                if (!isGroup) return Ok(new { result = WiseResult.Fail, details = "No such ACD Group.", function = "AddACDGroupAccess" });
+                if (!isGroup) return Ok(new { result = WiseResult.Fail, details = "No such ACD Group.", function = WiseFunc.Config.AddACDGroupAccess });
 
                 var data = (from a in _wisedb.ACDGroup_Accesses
                             where a.AgentID == agentId && a.AcdGroupID == groupId
@@ -325,11 +325,11 @@ namespace WisePBX.NET8.Controllers
                     AgentID = agentId
                 });
                 _wisedb.SaveChanges();
-                return Ok(new { result = WiseResult.Success, function = "AddACDGroupAccess" });
+                return Ok(new { result = WiseResult.Success, function = WiseFunc.Config.AddACDGroupAccess });
             }
             catch (Exception e)
             {
-                return Ok(new { result = WiseResult.Fail, data = e.Message, function = "AddACDGroupAccess" });
+                return Ok(new { result = WiseResult.Fail, data = e.Message, function = WiseFunc.Config.AddACDGroupAccess });
             }
         }
 
@@ -340,27 +340,27 @@ namespace WisePBX.NET8.Controllers
             int groupId = Convert.ToInt32((p["groupId"] ?? "-1").ToString());
 
             if (agentId == -1 || groupId == -1) 
-                return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = "DelACDGroupAccess" });
+                return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = WiseFunc.Config.DelACDGroupAccess});
             try
             {
                 bool isAgent = (from a in _wisedb.AgentInfos where a.AgentID == agentId select a).Any();
-                if (!isAgent) return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchAgent, function = "DelACDGroupAccess" });
+                if (!isAgent) return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchAgent, function = WiseFunc.Config.DelACDGroupAccess });
 
                 bool isGroup = (from a in _wisedb.ACDGroupMembers where a.ACDGroupID == groupId select a).Any();
-                if (!isGroup) return Ok(new { result = WiseResult.Fail, details = "No such ACD Group.", function = "DelACDGroupAccess" });
+                if (!isGroup) return Ok(new { result = WiseResult.Fail, details = "No such ACD Group.", function = WiseFunc.Config.DelACDGroupAccess });
 
                 var data = (from a in _wisedb.ACDGroup_Accesses
                             where a.AgentID == agentId && a.AcdGroupID == groupId
                             select a).SingleOrDefault();
-                if (data == null) return Ok(new { result = WiseResult.Success, function = "DelACDGroupAccess" });
+                if (data == null) return Ok(new { result = WiseResult.Success, function = WiseFunc.Config.DelACDGroupAccess });
 
                 _wisedb.ACDGroup_Accesses.Remove(data);
                 _wisedb.SaveChanges();
-                return Ok(new { result = WiseResult.Success, function = "DelACDGroupAccess" });
+                return Ok(new { result = WiseResult.Success, function = WiseFunc.Config.DelACDGroupAccess });
             }
             catch (Exception e)
             {
-                return Ok(new { result = WiseResult.Fail, data = e.Message, function = "DelACDGroupAccess" });
+                return Ok(new { result = WiseResult.Fail, data = e.Message, function = WiseFunc.Config.DelACDGroupAccess });
             }
         }
 
@@ -413,7 +413,7 @@ namespace WisePBX.NET8.Controllers
             }
             catch (Exception e)
             {
-                return Ok(new { result = WiseResult.Fail, data = e.Message, function = "GetDashboardData" });
+                return Ok(new { result = WiseResult.Fail, data = e.Message, function = WiseFunc.Config.GetDashboardData });
             }
         }
         [HttpPost]
@@ -423,14 +423,14 @@ namespace WisePBX.NET8.Controllers
             {
                 int daysBefore = Convert.ToInt32((p["daysBefore"]??"-1").ToString());
                 if (daysBefore == -1) 
-                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = "GetDashboardData_Agent" });
+                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = WiseFunc.Config.GetDashboardData_Agent });
 
                 var data = _wiseSPdb.SP_Dashboard_Data_Agent(daysBefore).ToList();
-                return Ok(new { result = WiseResult.Success, data, function = "GetDashboardData_Agent" });
+                return Ok(new { result = WiseResult.Success, data, function = WiseFunc.Config.GetDashboardData_Agent });
             }
             catch (Exception e)
             {
-                return Ok(new { result = WiseResult.Fail, data = e.Message, function = "GetDashboardData_Agent" });
+                return Ok(new { result = WiseResult.Fail, data = e.Message, function = WiseFunc.Config.GetDashboardData_Agent });
             }
         }
 
@@ -440,16 +440,16 @@ namespace WisePBX.NET8.Controllers
             try
             {
                 if (p["reportDate"] == null) 
-                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = "GetWallboardCount" });
+                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = WiseFunc.Config.GetWallboardCount });
                 DateTime reportDate = Convert.ToDateTime(p["reportDate"]?.ToString());
 
 
                 var data = _wiseSPdb.SP_wallboard_count(reportDate);
-                return Ok(new { result = WiseResult.Success, data, function = "GetWallboardCount" });
+                return Ok(new { result = WiseResult.Success, data, function = WiseFunc.Config.GetWallboardCount });
             }
             catch (Exception e)
             {
-                return Ok(new { result = WiseResult.Fail, data = e.Message, function = "GetWallboardCount" });
+                return Ok(new { result = WiseResult.Fail, data = e.Message, function = WiseFunc.Config.GetWallboardCount });
             }
         }
     }
