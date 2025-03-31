@@ -43,12 +43,12 @@ namespace WisePBX.NET8.Controllers
         [HttpPost]
         public IActionResult GetList([FromBody] JsonObject p)
         {
-            if (p == null) return Ok(new { result = WiseResult.Error, details = WiseError.InvalidParameters });
             string dnis = (p["dnis"]??"").ToString();
             int agentId = Convert.ToInt32((p["agentId"] ?? "-1").ToString());
             int handled = Convert.ToInt32((p["handled"] ?? "0").ToString());
 
-            if (dnis == "" || agentId <= 0) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
+            if (dnis == "" || agentId <= 0) 
+                return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = "Email:GetList" });
 
             var _mediaList = (from m in _wisedb.MediaCalls
                               where m.AgentID == agentId && m.DNIS == dnis && m.IsHandleFinish == handled
@@ -73,19 +73,19 @@ namespace WisePBX.NET8.Controllers
                     Content = _content
                 });
             }
-            return Ok(new { result = WiseResult.Success, data });
+            return Ok(new { result = WiseResult.Success, data, function = "Email:GetList" });
 
         }
 
         [HttpPost]
         public IActionResult GetCount([FromBody] JsonObject p)
         {
-            if (p == null) return Ok(new { result = WiseResult.Error, details = WiseError.InvalidParameters });
             string dnis = (p["dnis"] ?? "").ToString();
             int agentId = Convert.ToInt32((p["agentId"] ?? "-1").ToString());
             int handled = Convert.ToInt32((p["handled"] ?? "0").ToString());
 
-            if (dnis == "" || agentId <= 0) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
+            if (dnis == "" || agentId <= 0) 
+                return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = "Email:GetCount" });
 
             return base.GetCount(6, agentId, dnis, handled);
         }
@@ -94,12 +94,14 @@ namespace WisePBX.NET8.Controllers
         public IActionResult GetContent([FromBody] JsonObject p)
         {
             int id =Convert.ToInt32((p["id"]??"0").ToString());
-            if (id == 0) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
+            if (id == 0) 
+                return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = "Email:GetContent" });
 
             MediaCall? _mediaCall = (from m in _wisedb.MediaCalls
                                     where m.CallID == id && (m.CallType == 6 || m.CallType == 12)
                                     select m).SingleOrDefault();
-            if (_mediaCall == null) return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchRecord });
+            if (_mediaCall == null) 
+                return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchRecord, function = "Email:GetContent" });
 
 
             
@@ -183,7 +185,8 @@ namespace WisePBX.NET8.Controllers
             int mediaId = Convert.ToInt32((p["mediaId"]??"0").ToString());
             string caseNo = (p["caseNo"] ?? "0").ToString();
             int updatedBy = Convert.ToInt32((p["updatedBy"] ?? "0").ToString());
-            if (mediaId == 0) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
+            if (mediaId == 0) 
+                return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = "Email:SetHandled" });
 
             return base.SetHandled(6, mediaId, caseNo, updatedBy);
         }
@@ -195,7 +198,7 @@ namespace WisePBX.NET8.Controllers
             int assignTo = Convert.ToInt32((p["assignTo"]??"0").ToString());
             int updatedBy = Convert.ToInt32((p["updatedBy"] ?? "0").ToString());
             if (mediaIds == null || assignTo <= 0 || updatedBy <= 0)
-                return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
+                return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = "Email:AssignAgent" });
             return base.AssignAgent(6, mediaIds, assignTo, updatedBy);
 
         }
@@ -211,11 +214,11 @@ namespace WisePBX.NET8.Controllers
                 string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
 
                 if (content == "" || agentId == 0)
-                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
+                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = "Email:UploadContent" });
 
                 if (link != "" && !link.StartsWith($@"{webUrl}/Uploads/"))
                 {
-                    return Ok(new { result = WiseResult.Fail, details = "Invalid Link Parameters." });
+                    return Ok(new { result = WiseResult.Fail, details = "Invalid Link Parameters.", , function = "Email:UploadContent" });
                 }
 
                 string _tmpFolder = DateTime.Today.ToString("yyyyMMdd");
@@ -226,11 +229,11 @@ namespace WisePBX.NET8.Controllers
                 string fileLink = $@"{webUrl}/Uploads/{_tmpFolder}/{fileName}";
 
                 System.IO.File.WriteAllText(filePath, content, Encoding.Unicode);
-                return Ok(new { result = WiseResult.Success, data = new { filePath, fileLink} });
+                return Ok(new { result = WiseResult.Success, data = new { filePath, fileLink}, function = "Email:UploadContent" });
             }
             catch (Exception ex)
             {
-                return Ok(new { result = WiseResult.Error, details = ex.Message });
+                return Ok(new { result = WiseResult.Error, details = ex.Message, function = "Email:UploadContent" });
             }
 
         }
@@ -243,19 +246,19 @@ namespace WisePBX.NET8.Controllers
                 int agentId = Convert.ToInt32((p["agentId"] ?? "0").ToString());
                 string filePath = (p["filePath"]??"").ToString();
                 if (filePath == "")
-                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
+                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = "Email:RemoveContent" });
 
                 string _fileName = Path.GetFileName(filePath);
 
                 if (!_fileName.StartsWith("Email_" + agentId + "_"))
-                    return Ok(new { result = WiseResult.Fail, details = "Invalid File Path." });
+                    return Ok(new { result = WiseResult.Fail, details = "Invalid File Path.", function = "Email:RemoveContent" });
 
                 System.IO.File.Delete(filePath);
                 return Ok(new { result = WiseResult.Success });
             }
             catch (Exception ex)
             {
-                return Ok(new { result = WiseResult.Error, details = ex.Message });
+                return Ok(new { result = WiseResult.Error, details = ex.Message, function = "Email:RemoveContent" });
             }
         }
 
@@ -267,12 +270,12 @@ namespace WisePBX.NET8.Controllers
                 string projectName = (p["projectName"]??"").ToString();
 
                 if (projectName == "")
-                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
+                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = "Email:GetSetting" });
 
                 string emailType = (p["emailType"] ?? "").ToString();
 
                 if (emailType != "" && !"Junk Mail,Difficult Customer,Repeated Customer".Split(',').Contains(emailType))
-                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
+                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = "Email:GetSetting" });
 
                 string emailAddress = (p["emailAddress"] ?? "").ToString();
 
@@ -297,7 +300,7 @@ namespace WisePBX.NET8.Controllers
             }
             catch (Exception ex)
             {
-                return Ok(new { result = WiseResult.Error, details = ex.Message });
+                return Ok(new { result = WiseResult.Error, details = ex.Message, function = "Email:GetSetting" });
             }
         }
 
@@ -307,22 +310,16 @@ namespace WisePBX.NET8.Controllers
             try
             {
                 string projectName = (p["projectName"] ?? "").ToString();
-
-                if (projectName == "")
-                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
-
                 string emailAddress = (p["emailAddress"] ?? "").ToString();
-                if (emailAddress == "")
-                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
-
                 string emailType = (p["emailType"] ?? "").ToString();
+                int agentId = Convert.ToInt32((p["agentId"] ?? "-1").ToString());
+                if (projectName == "" || emailAddress == "" || agentId == -1)
+                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = "Email:AddSetting" });
+
+                
 
                 if (emailType == "" || !"Junk Mail,Difficult Customer,Repeated Customer".Split(',').Contains(emailType))
-                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
-
-                int agentId = Convert.ToInt32((p["agentId"] ?? "-1").ToString());
-                if (agentId == -1)
-                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
+                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = "Email:AddSetting" });
 
                 string remarks = (p["remarks"]??"").ToString();
                 string fullName = (p["fullName"] ?? "").ToString(); 
@@ -364,7 +361,7 @@ namespace WisePBX.NET8.Controllers
 
                     }
                     else
-                        return Ok(new { result = WiseResult.Fail, details = "Such record is already existed." });
+                        return Ok(new { result = WiseResult.Fail, details = "Such record is already existed.", function = "Email:AddSetting" });
                 }
 
 
@@ -382,11 +379,11 @@ namespace WisePBX.NET8.Controllers
                 });
 
                 _wisedb.SaveChanges();
-                return Ok(new { result = WiseResult.Success, data = _setting });
+                return Ok(new { result = WiseResult.Success, data = _setting, function = "Email:AddSetting" });
             }
             catch (Exception ex)
             {
-                return Ok(new { result = WiseResult.Fail, details = ex.Message });
+                return Ok(new { result = WiseResult.Fail, details = ex.Message, function = "Email:AddSetting" });
             }
         }
 
@@ -396,29 +393,18 @@ namespace WisePBX.NET8.Controllers
             try
             {
                 string projectName = (p["projectName"] ?? "").ToString();
-
-                if (projectName == "")
-                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
-
                 string emailAddress = (p["emailAddress"] ?? "").ToString();
-                if (emailAddress == "")
-                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
-
-
                 string emailType = (p["emailType"] ?? "").ToString();
-                if (emailType == "")
-                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
-
                 int agentId = Convert.ToInt32((p["agentId"] ?? "-1").ToString());
-                if (agentId == -1)
-                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
-
+                if (projectName == "" || emailAddress == "" || emailType == "" || agentId == -1)
+                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = "Email:DelSetting" });
+                
                 var _setting = (from m in _wisedb.EmailSettings
                                 where m.ProjectName == projectName && m.EmailType == emailType
                                 && m.EmailAddress == emailAddress && m.Valid == "Y"
                                 select m).SingleOrDefault();
                 if (_setting == null)
-                    return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchRecord });
+                    return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchRecord, function = "Email:DelSetting" });
 
 
                 _setting.Valid = "N";
@@ -436,11 +422,11 @@ namespace WisePBX.NET8.Controllers
                 });
 
                 _wisedb.SaveChanges();
-                return Ok(new { result = WiseResult.Success });
+                return Ok(new { result = WiseResult.Success, function = "Email:DelSetting" });
             }
             catch (Exception ex)
             {
-                return Ok(new { result = WiseResult.Fail, details = ex.Message });
+                return Ok(new { result = WiseResult.Fail, details = ex.Message, function = "Email:DelSetting" });
             }
         }
 
@@ -452,7 +438,7 @@ namespace WisePBX.NET8.Controllers
                 string projectName = (p["projectName"] ?? "").ToString();
 
                 if (projectName == "")
-                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
+                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = "Email:GetJunkMails" });
 
 
 
@@ -488,11 +474,11 @@ namespace WisePBX.NET8.Controllers
                     _emailList.Add(_email);
                 }
 
-                return Ok(new { result = WiseResult.Success, data = _emailList });
+                return Ok(new { result = WiseResult.Success, data = _emailList, function = "Email:GetJunkMails" });
             }
             catch (Exception ex)
             {
-                return Ok(new { result = WiseResult.Fail, details = ex.Message });
+                return Ok(new { result = WiseResult.Fail, details = ex.Message, function = "Email:GetJunkMails" });
             }
         }
     }

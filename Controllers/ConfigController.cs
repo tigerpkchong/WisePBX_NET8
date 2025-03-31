@@ -413,7 +413,7 @@ namespace WisePBX.NET8.Controllers
             }
             catch (Exception e)
             {
-                return Ok(new { result = WiseResult.Fail, data = e.Message });
+                return Ok(new { result = WiseResult.Fail, data = e.Message, function = "GetDashboardData" });
             }
         }
         [HttpPost]
@@ -422,14 +422,15 @@ namespace WisePBX.NET8.Controllers
             try
             {
                 int daysBefore = Convert.ToInt32((p["daysBefore"]??"-1").ToString());
-                if (daysBefore == -1) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
+                if (daysBefore == -1) 
+                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = "GetDashboardData_Agent" });
 
                 var data = _wiseSPdb.SP_Dashboard_Data_Agent(daysBefore).ToList();
-                return Ok(new { result = WiseResult.Success, data });
+                return Ok(new { result = WiseResult.Success, data, function = "GetDashboardData_Agent" });
             }
             catch (Exception e)
             {
-                return Ok(new { result = WiseResult.Fail, data = e.Message });
+                return Ok(new { result = WiseResult.Fail, data = e.Message, function = "GetDashboardData_Agent" });
             }
         }
 
@@ -438,16 +439,17 @@ namespace WisePBX.NET8.Controllers
         {
             try
             {
-                if (p["reportDate"] == null) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
+                if (p["reportDate"] == null) 
+                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = "GetWallboardCount" });
                 DateTime reportDate = Convert.ToDateTime(p["reportDate"]?.ToString());
 
 
                 var data = _wiseSPdb.SP_wallboard_count(reportDate);
-                return Ok(new { result = WiseResult.Success, data });
+                return Ok(new { result = WiseResult.Success, data, function = "GetWallboardCount" });
             }
             catch (Exception e)
             {
-                return Ok(new { result = WiseResult.Fail, data = e.Message });
+                return Ok(new { result = WiseResult.Fail, data = e.Message, function = "GetWallboardCount" });
             }
         }
     }
