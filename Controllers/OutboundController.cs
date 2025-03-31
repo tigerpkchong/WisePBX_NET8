@@ -62,25 +62,20 @@ namespace WisePBX.NET8.Controllers
 
             return Ok(new { result = WiseResult.Success, data = _objCase.CaseId });
         }
-        public partial record UploadForm
-        {
-            public required int caseNo { get; init; }
-            public required int agentId { get; init; }
-            public required int campaignId { get; init; }
-            public required List<IFormFile> files { get; init; }
-        }
+        
         [HttpPost]
-        public async Task<IActionResult> UploadAttachment(UploadForm form)
+        public async Task<IActionResult> UploadAttachment(
+            [FromForm] int caseNo, [FromForm] int agentId, [FromForm] int campaignId, [FromForm] List<IFormFile> files)
         {
-            if (form.files.Count == 0)
+            if (files.Count == 0)
                 return Ok(new { result = WiseResult.Fail, details = "No File Upload." });
 
             string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
-            string _tmpFolder = ((form.campaignId == 0) ? "C" + form.caseNo : "O" + form.campaignId) + "-" + form.agentId + "-" + DateTime.Now.Ticks;
+            string _tmpFolder = ((campaignId == 0) ? "C" + caseNo : "O" + campaignId) + "-" + agentId + "-" + DateTime.Now.Ticks;
             string _fillFolder = Path.Combine(fileUploadPath, _tmpFolder);
             Directory.CreateDirectory(_fillFolder);
             var data = new List<dynamic>();
-            foreach (var _file in form.files)
+            foreach (var _file in files)
             {
                 string _filePath = Path.Combine(_fillFolder, _file.FileName);
                 string _fullfilePath = Path.GetFullPath(_filePath);

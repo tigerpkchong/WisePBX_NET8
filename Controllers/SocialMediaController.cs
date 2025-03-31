@@ -34,23 +34,15 @@ namespace WisePBX.NET8.Controllers
                 fileUploadPath = ienv.ContentRootPath + "/Uploads";
         }
 
-        public partial record UploadForm
-        {
-            public required string ticketId { get; init; }
-            public required int agentId { get; init; }
-            public required List<IFormFile> files { get; init; }
-        }
         [HttpPost]
-        public async Task<IActionResult> UploadFile(UploadForm form)
+        public async Task<IActionResult> UploadFile(
+            [FromForm] string ticketId, [FromForm] int agentId, [FromForm] List<IFormFile> files)
         {
             try
             {
-                string ticketId = form.ticketId;
-                int agentId = form.agentId;
-
                 if (ticketId == string.Empty || agentId == 0)
                     return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
-                if (form.files.Count == 0)
+                if (files.Count == 0)
                     return Ok(new { result = WiseResult.Fail, details = "No File Upload." });
 
                 
@@ -63,7 +55,7 @@ namespace WisePBX.NET8.Controllers
                 string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
 
                 var data = new List<dynamic>();
-                foreach (var _file in form.files)
+                foreach (var _file in files)
                 {
                     string _filePath = Path.Combine(_fileFolder, _file.FileName);
                     string _fullfilePath = Path.GetFullPath(_filePath);
