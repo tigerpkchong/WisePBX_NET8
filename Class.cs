@@ -1,6 +1,6 @@
 ﻿namespace WisePBX.NET8
 {
-    public class ACDGroupAccessClass
+    public class AcdGroupAccessClass
     {
         public int groupId { get; set; }
         public bool accessible { get; set; }

@@ -257,9 +257,9 @@ namespace WisePBX.NET8.Controllers
                 bool isAgent = (from a in _wisedb.AgentInfos where a.AgentID == agentId select a).Any();
                 if (!isAgent) return Ok(new { result = WiseResult.Fail, details = "No such agent." });
 
-                List<ACDGroupAccessClass> setting = p["setting"]?.GetValue<List<ACDGroupAccessClass>>() ?? [];
+                List<AcdGroupAccessClass> setting = p["setting"]?.GetValue<List<AcdGroupAccessClass>>() ?? [];
 
-                foreach (ACDGroupAccessClass i in setting)
+                foreach (AcdGroupAccessClass i in setting)
                 {
                     var _info = (from a in _wisedb.ACDGroup_Accesses
                                  join g in _wisedb.ACDGroups on a.AcdGroupID equals g.AcdGroupID

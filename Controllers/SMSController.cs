@@ -6,7 +6,7 @@ namespace WisePBX.NET8.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class SMSController(WiseEntities wiseEntities) : ControllerBase
+    public class SmsController(WiseEntities wiseEntities) : ControllerBase
     {
         private readonly WiseEntities _wisedb= wiseEntities;
 
