@@ -51,4 +51,5 @@
             public static readonly string DelSetting = "DelSetting";
             public static readonly string GetJunkMails = "GetJunkMails";
         }
+    }
 }
