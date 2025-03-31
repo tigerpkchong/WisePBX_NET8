@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json.Nodes;
 using WisePBX.NET8.Models.Wise;
 
 namespace WisePBX.NET8.Controllers
@@ -11,9 +12,9 @@ namespace WisePBX.NET8.Controllers
         private readonly WiseEntities _wisedb= wiseEntities;
 
         [HttpPost]
-        public IActionResult GetContent([FromBody] dynamic p)
+        public IActionResult GetContent([FromBody] JsonObject p)
         {
-            int id = (p.id == null) ? -1 : Convert.ToInt32(p.id.Value);
+            int id = (p["id"] == null) ? -1 : Convert.ToInt32(p["id"]?.ToString());
             if (id == -1) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
             MediaCall? _mediaCall = (from m in _wisedb.MediaCalls
                                     where m.CallID == id && m.CallType == 15
