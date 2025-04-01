@@ -6,7 +6,7 @@ using WisePBX.NET8.Models.Wise;
 
 namespace WisePBX.NET8.Controllers
 {
-    //[Route("api/[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
     public class WiseBaseController(WiseEntities wiseEntities) : ControllerBase
     {

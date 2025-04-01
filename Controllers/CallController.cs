@@ -34,8 +34,8 @@ namespace WisePBX.NET8.Controllers
                         orderby v.SerialID
                         select new
                         {
-                            FileName = v.Filepath,
-                            FileUrl = v.Filepath.Replace(@"\", @"/").Replace("//" + hostName + "/", webUrl +"/"),
+                            FileName = v.Filepath??"",
+                            FileUrl = (v.Filepath ?? "").Replace(@"\", @"/").Replace("//" + hostName + "/", webUrl +"/"),
                             TimeStamp = c.Begintime,
                             CallType = c.Calltype,
                             c.DNIS,
@@ -171,16 +171,16 @@ namespace WisePBX.NET8.Controllers
                 DateTime endDate = (p["endDate"] == null) ? DateTime.Today.AddDays(1) : (Convert.ToDateTime(p["endDate"]?.ToString())).AddDays(1);
                 int serviceId = (p["serviceId"] == null) ? -1 : Convert.ToInt32((p["serviceId"]??"-1").ToString());
 
-                string[] agentId = []; 
+                string[]? agentId = []; 
                 if (p["agentId"] != null)
                 {
-                    if (p!["agentId"]!.GetType().Name == "JArray")
-                        agentId = (p!["agentId"]!).GetValue<string[]>();
+                    if (p!["agentId"]!.GetType().Name == "JsonArray")
+                        agentId = JsonConvert.DeserializeObject<string[]>(p!["agentId"]!.ToJsonString());
                     else
-                        agentId =  [p!["agentId"]!.ToString()];
+                        agentId = [p!["agentId"]!.ToString()];
                     
                 }
-                agentId = (agentId ??[]).Select(m => "|" + m + "|").ToArray();
+                agentId = (agentId??[]).Select(m => "|" + m + "|").ToArray();
 
                 string phoneNo = (p["phoneNo"] ?? "").ToString();
                 int callType = Convert.ToInt32((p["callType"] ?? "-1").ToString());
@@ -189,8 +189,8 @@ namespace WisePBX.NET8.Controllers
                 int[]? callId = [];
                 if (p["callId"] != null)
                 {
-                    if (p["callId"]?.GetType().Name == "JArray")
-                        callId = p!["callId"]!.GetValue<int[]>();
+                    if (p["callId"]?.GetType().Name == "JsonArray")
+                        callId = JsonConvert.DeserializeObject<int[]>(p!["callId"]!.ToJsonString());
                     else
                         callId = [p!["callId"]!.GetValue<int>()];
                 }
