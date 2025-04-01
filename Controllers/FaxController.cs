@@ -6,7 +6,7 @@ using WisePBX.NET8.Models.Wise;
 
 namespace WisePBX.NET8.Controllers
 {
-    [Route("api/[controller]/[action]")]
+    [Route(template: "api/[controller]")]
     [ApiController]
     public class FaxController(IConfiguration iConfig, WiseEntities wiseEntities) 
         : WiseBaseController(wiseEntities)
@@ -15,13 +15,13 @@ namespace WisePBX.NET8.Controllers
         private readonly WiseEntities _wisedb = wiseEntities;
 
         [HttpPost]
-        [ActionName("GetCount")]
+        [Route(template: "GetCount")]
         public IActionResult GetCount([FromBody] JsonObject p)
         {
             if (p == null) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
             string dnis = (p["dnis"] ?? "").ToString();
-            int agentId = Convert.ToInt32(p["agentId"] ?? "-1");
-            int handled = Convert.ToInt32(p["handled"] ?? "0");
+            int agentId = Convert.ToInt32((p["agentId"] ?? "-1").ToString());
+            int handled = Convert.ToInt32((p["handled"] ?? "0").ToString());
 
             if (dnis == "" || agentId == -1) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
 
@@ -29,24 +29,24 @@ namespace WisePBX.NET8.Controllers
         }
 
         [HttpPost]
-        [ActionName("SetHandled")]
+        [Route(template: "SetHandled")]
         public IActionResult SetHandled([FromBody] JsonObject p)
         {
-            int mediaId = Convert.ToInt32(p["mediaId"] ?? "0");
+            int mediaId = Convert.ToInt32((p["mediaId"] ?? "0").ToString());
             string caseNo = (p["caseNo"] ?? "0").ToString();
-            int updatedBy = Convert.ToInt32(p["updatedBy"] ?? "0");
+            int updatedBy = Convert.ToInt32((p["updatedBy"] ?? "0").ToString());
             if (mediaId == 0) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
 
             return base.SetHandled(8, mediaId, caseNo, updatedBy);
         }
 
         [HttpPost]
-        [ActionName("AssignAgent")]
+        [Route(template: "AssignAgent")]
         public IActionResult AssignAgent([FromBody] JsonObject p)
         {
             List<int>? mediaIds = p["mediaIds"]?.GetValue<List<int>>();
-            int assignTo = Convert.ToInt32(p["assignTo"] ?? "-1");
-            int updatedBy = Convert.ToInt32(p["updatedBy"] ?? "-1");
+            int assignTo = Convert.ToInt32((p["assignTo"] ?? "-1").ToString());
+            int updatedBy = Convert.ToInt32((p["updatedBy"] ?? "-1").ToString());
             if (mediaIds == null || assignTo == -1 || updatedBy == -1)
                 return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
 
@@ -54,13 +54,13 @@ namespace WisePBX.NET8.Controllers
         }
 
         [HttpPost]
-        [ActionName("GetList")]
+        [Route(template: "GetList")]
         public IActionResult GetList([FromBody] JsonObject p)
         {
             if (p == null) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
             string dnis = (p["dnis"] ?? "").ToString();
-            int agentId = Convert.ToInt32(p["agentId"] ?? "-1");
-            int handled = Convert.ToInt32(p["handled"] ?? "0");
+            int agentId = Convert.ToInt32((p["agentId"] ?? "-1").ToString());
+            int handled = Convert.ToInt32((p["handled"] ?? "0").ToString());
             string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
             if (dnis == "" || agentId == -1) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
 
@@ -90,7 +90,7 @@ namespace WisePBX.NET8.Controllers
 
         }
         [HttpPost]
-        [ActionName("GetContent")]
+        [Route(template: "GetContent")]
         public IActionResult GetContent([FromBody] JsonObject p)
         {
             int id = Convert.ToInt32((p["id"]??"-1").ToString());

@@ -24,9 +24,9 @@ namespace WisePBX.NET8.Models.Wise_SP
                 .ToArray();
         }
         public virtual DbSet<SP_Dashboard_Data_Agent_Result> SP_Dashboard_Data_Agent_Results { get; set; }
-        public IEnumerable<SP_Dashboard_Data_Result> SP_Dashboard_Data_Agent(int days_before, string? servicelist = "")
+        public IEnumerable<SP_Dashboard_Data_Agent_Result> SP_Dashboard_Data_Agent(int days_before, string? servicelist = "")
         {
-            return this.SP_Dashboard_Data_Results
+            return this.SP_Dashboard_Data_Agent_Results
                 .FromSqlInterpolated($"[dbo].[SP_Dashboard_Data_Agent] {days_before}, {servicelist}")
                 .ToArray();
         }

@@ -9,8 +9,8 @@ using System.Runtime.CompilerServices;
 using static Org.BouncyCastle.Math.EC.ECCurve;
 namespace WisePBX.NET8.Controllers
 {
-    [Route("api/[controller]/[action]")]
-    
+    [Route(template: "api/[controller]")]
+    [ApiController]
     public class CallController(IConfiguration iConfig, WiseEntities wiseEntities) 
         : WiseBaseController(wiseEntities)
     {
@@ -20,6 +20,7 @@ namespace WisePBX.NET8.Controllers
         private readonly WiseEntities _wisedb = wiseEntities;
         
         [HttpPost]
+        [Route(template: "GetContent")]
         public IActionResult GetContent([FromBody] JsonObject p)
         {
             int id = Convert.ToInt32((p["id"]??"0").ToString());
@@ -54,6 +55,7 @@ namespace WisePBX.NET8.Controllers
         }
         
         [HttpPost]
+        [Route(template: "GetVoiceMail")]
         public IActionResult GetVoiceMail([FromBody] JsonObject p)
         {
             DateTime startDate = Convert.ToDateTime((p["startDate"]??"").ToString());
@@ -99,6 +101,7 @@ namespace WisePBX.NET8.Controllers
         }
 
         [HttpPost]
+        [Route(template: "GetVoiceLog")]
         public IActionResult GetVoiceLog([FromBody] JsonObject p)
         {
             try
@@ -163,6 +166,7 @@ namespace WisePBX.NET8.Controllers
 
         }
         [HttpPost]
+        [Route(template: "GetVoiceLogEx")]
         public IActionResult GetVoiceLogEx([FromBody] JsonObject p)
         {
             try
@@ -252,6 +256,7 @@ namespace WisePBX.NET8.Controllers
         }
 
         [HttpPost]
+        [Route(template: "GetAgentList")]
         public IActionResult GetAgentList()
         {
             try
@@ -274,6 +279,7 @@ namespace WisePBX.NET8.Controllers
 
 
         [HttpPost]
+        [Route(template: "GetAgentInfo")]
         public IActionResult GetAgentInfo([FromBody] JsonObject p)
         {
             try
@@ -298,6 +304,7 @@ namespace WisePBX.NET8.Controllers
         }
 
         [HttpPost]
+        [Route(template: "GetOutboundANI")]
         public IActionResult GetOutboundANI([FromBody] JsonObject p)
         {
             try
