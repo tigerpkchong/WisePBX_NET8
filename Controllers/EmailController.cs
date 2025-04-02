@@ -18,6 +18,8 @@ using System.Xml;
 using WisePBX.NET8.Models.Wise;
 using Newtonsoft.Json;
 using Microsoft.EntityFrameworkCore;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using MailKit;
 
 namespace WisePBX.NET8.Controllers
 {
@@ -30,6 +32,7 @@ namespace WisePBX.NET8.Controllers
         private readonly string fileUploadPath;
 
         private readonly WiseEntities _wisedb;
+        private readonly Regex _rgx = new("\r?\n", RegexOptions.NonBacktracking);
         public EmailController(IConfiguration iConfig, IWebHostEnvironment ienvironment
             , WiseEntities wiseEntities) 
             : base( wiseEntities)
@@ -93,24 +96,53 @@ namespace WisePBX.NET8.Controllers
             return base.GetCount(6, agentId, dnis, handled);
         }
 
+        internal dynamic? ToAttachment(MimeEntity entity)
+        {
+            if(entity is MimePart mimePart)
+            {
+                using var memoryStream = new MemoryStream();
+
+                mimePart.Content.DecodeTo(memoryStream);
+                byte[] buffer = memoryStream.GetBuffer();
+
+                var attachment = new
+                {
+                    mimePart.FileName,
+                    Base64Data = Convert.ToBase64String(buffer, 0, (int)memoryStream.Length),
+                    ContentType = mimePart.ContentType.MimeType
+                };
+                return attachment;
+            }
+            else if (entity is MessagePart msgPart)
+            {
+                using var memoryStream = new MemoryStream();
+                msgPart.Message.WriteTo(memoryStream);
+                byte[] buffer = memoryStream.GetBuffer();
+                var attachment = new
+                {
+                    FileName = msgPart.Message.Subject,
+                    Base64Data = Convert.ToBase64String(buffer, 0, (int)memoryStream.Length),
+                    ContentType = msgPart.ContentType.MimeType
+                };
+                return attachment;
+            }
+            return null;
+        }
+
         [HttpPost]
         [Route(template: "Email/GetContent")]
         public IActionResult GetContent([FromBody] JsonObject p)
         {
             int id =Convert.ToInt32((p["id"]??"0").ToString());
-            if (id == 0) 
-                return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = WiseFunc.Email.GetContent });
-
+            
             MediaCall? _mediaCall = (from m in _wisedb.MediaCalls
                                     where m.CallID == id && (m.CallType == 6 || m.CallType == 12)
                                     select m).SingleOrDefault();
             if (_mediaCall == null) 
                 return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchRecord, function = WiseFunc.Email.GetContent });
-
-
             
             string _file = (_mediaCall.Filename??"").Replace($@"\\{hostName}\", $@"{hostDrive}:\"); 
-            Regex _rgx = new("\r?\n", RegexOptions.NonBacktracking);
+            
             MimeMessage message = MimeMessage.Load(_file);
             string _content = message.HtmlBody??_rgx.Replace(message.TextBody, "<br/>");
             DateTime _timestamp = (_mediaCall.CallType == 12) ? message.Date.LocalDateTime : 
@@ -130,59 +162,18 @@ namespace WisePBX.NET8.Controllers
             {
                 if (bodyPart.FileName != null && !bodyPart.IsAttachment)
                 {
-                    using var memoryStream = new MemoryStream();
-                    
-                    bodyPart.Content.DecodeTo(memoryStream);
-                    byte[] buffer = memoryStream.GetBuffer();
-
-                    var aa = new 
-                    {
-                        bodyPart.FileName,
-                        Base64Data = Convert.ToBase64String(buffer, 0, (int)memoryStream.Length),
-                        ContentType = bodyPart.ContentType.MimeType
-                    };
-                    data.Attachments.Add(aa);
+                    var _attachment = ToAttachment(bodyPart);
+                    if(_attachment != null) data.Attachments.Add(_attachment);
                 }
             }
             foreach (MimeEntity entity in message.Attachments)
             {
-                if (entity is MimePart mimePart)
-                {
-                    using var memoryStream = new MemoryStream();
-
-                    mimePart.Content.DecodeTo(memoryStream);
-                    byte[] buffer = memoryStream.GetBuffer();
-
-                    var attachment = new
-                    {
-                        mimePart.FileName,
-                        Base64Data = Convert.ToBase64String(buffer, 0, (int)memoryStream.Length),
-                        ContentType = mimePart.ContentType.MimeType
-                    };
-                    data.Attachments.Add(attachment);
-
-                }
-                else
-                {
-                    if (entity is MessagePart msgPart)
-                    {
-                        using var memoryStream = new MemoryStream();
-                        msgPart.Message.WriteTo(memoryStream);
-                        byte[] buffer = memoryStream.GetBuffer();
-                        var attachment = new
-                        {
-                            FileName = msgPart.Message.Subject,
-                            Base64Data = Convert.ToBase64String(buffer, 0, (int)memoryStream.Length),
-                            ContentType = msgPart.ContentType.MimeType
-                        };
-                        data.Attachments.Add(attachment);
-                    }
-                }
-
+                var _attachment = ToAttachment(entity);
+                if (_attachment != null) data.Attachments.Add(_attachment);
             }
             return Ok(new { result = WiseResult.Success, data, WiseFunc.Email.GetContent });
-            
         }
+
         [HttpPost]
         [Route(template: "Email/SetHandled")]
         public IActionResult SetHandled([FromBody] JsonObject p)
