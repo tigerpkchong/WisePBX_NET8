@@ -51,5 +51,19 @@
             public static readonly string DelSetting = "DelSetting";
             public static readonly string GetJunkMails = "GetJunkMails";
         }
+        public static class Fax
+        {
+            public static readonly string GetList = "GetList";
+            public static readonly string GetCount = "GetCount";
+            public static readonly string GetContent = "GetContent";
+            public static readonly string SetHandled = "SetHandled";
+            public static readonly string AssignAgent = "AssignAgent";
+            public static readonly string UploadContent = "UploadContent";
+            public static readonly string RemoveContent = "RemoveContent";
+            public static readonly string GetSetting = "GetSetting";
+            public static readonly string AddSetting = "AddSetting";
+            public static readonly string DelSetting = "DelSetting";
+            public static readonly string GetJunkMails = "GetJunkMails";
+        }
     }
 }
