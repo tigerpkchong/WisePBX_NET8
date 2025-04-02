@@ -16,6 +16,8 @@ using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Xml;
 using WisePBX.NET8.Models.Wise;
+using Newtonsoft.Json;
+using Microsoft.EntityFrameworkCore;
 
 namespace WisePBX.NET8.Controllers
 {
@@ -188,7 +190,7 @@ namespace WisePBX.NET8.Controllers
             int mediaId = Convert.ToInt32((p["mediaId"]??"0").ToString());
             string caseNo = (p["caseNo"] ?? "0").ToString();
             int updatedBy = Convert.ToInt32((p["updatedBy"] ?? "0").ToString());
-            if (mediaId == 0) 
+            if (mediaId == 0 || updatedBy==0) 
                 return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = WiseFunc.Email.SetHandled });
 
             return base.SetHandled(6, mediaId, caseNo, updatedBy);
@@ -198,7 +200,7 @@ namespace WisePBX.NET8.Controllers
         [Route(template: "Email/AssignAgent")]
         public IActionResult AssignAgent([FromBody] JsonObject p)
         {
-            List<int>? mediaIds = p["mediaIds"]?.GetValue<List<int>>();
+            List<int>? mediaIds = JsonConvert.DeserializeObject<List<int>>(p!["mediaIds"]!.ToJsonString());
             int assignTo = Convert.ToInt32((p["assignTo"]??"0").ToString());
             int updatedBy = Convert.ToInt32((p["updatedBy"] ?? "0").ToString());
             if (mediaIds == null || assignTo <= 0 || updatedBy <= 0)
@@ -215,17 +217,11 @@ namespace WisePBX.NET8.Controllers
             {
                 int agentId = Convert.ToInt32((p["agentId"]??"0").ToString());
                 string content = (p["content"] ?? "").ToString();
-                string link = (p["link"] ?? "").ToString();
                 string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
 
                 if (content == "" || agentId == 0)
                     return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = WiseFunc.Email.UploadContent });
-
-                if (link != "" && !link.StartsWith($@"{webUrl}/Uploads/"))
-                {
-                    return Ok(new { result = WiseResult.Fail, details = "Invalid Link Parameters.", function = WiseFunc.Email.UploadContent });
-                }
-
+                
                 string _tmpFolder = DateTime.Today.ToString("yyyyMMdd");
                 string _fillFolder = Path.Combine(fileUploadPath, _tmpFolder);
                 Directory.CreateDirectory(_fillFolder);
@@ -297,8 +293,8 @@ namespace WisePBX.NET8.Controllers
                     _setting =
                     (from m in _wisedb.EmailSettings
                      where m.Valid == "Y" && m.ProjectName == projectName
-                     && ((m.EmailType == "Junk Mail" && emailAddress.Contains(m.EmailAddress, StringComparison.OrdinalIgnoreCase)) ||
-                     (m.EmailType != "Junk Mail" && emailAddress.Equals(m.EmailAddress, StringComparison.OrdinalIgnoreCase)))
+                     && ((m.EmailType == "Junk Mail" && emailAddress.Contains(m.EmailAddress)) ||
+                     (m.EmailType != "Junk Mail" && emailAddress ==m.EmailAddress))
                      select m).AsEnumerable();
                 }
                 if (emailType != "")
