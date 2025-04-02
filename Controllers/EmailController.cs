@@ -58,7 +58,7 @@ namespace WisePBX.NET8.Controllers
                               && m.CallType == 6
                               select m).Take(1000).ToList();
 
-            Regex _rgx = new("\r?\n");
+            Regex _rgx = new("\r?\n", RegexOptions.NonBacktracking);
             var data = new List<dynamic>();
             foreach (MediaCall _medialCall in _mediaList)
             {
@@ -110,7 +110,7 @@ namespace WisePBX.NET8.Controllers
 
             
             string _file = (_mediaCall.Filename??"").Replace($@"\\{hostName}\", $@"{hostDrive}:\"); 
-            Regex _rgx = new("\r?\n");
+            Regex _rgx = new("\r?\n", RegexOptions.NonBacktracking);
             MimeMessage message = MimeMessage.Load(_file);
             string _content = message.HtmlBody??_rgx.Replace(message.TextBody, "<br/>");
             DateTime _timestamp = (_mediaCall.CallType == 12) ? message.Date.LocalDateTime : 
@@ -455,7 +455,7 @@ namespace WisePBX.NET8.Controllers
                      where l.Project == projectName && l.Action == "Junk Mail"
                      select m).ToList();
 
-                Regex _rgx = new("\r?\n");
+                Regex _rgx = new("\r?\n", RegexOptions.NonBacktracking);
                 List<dynamic> _emailList=[];
                 foreach (MediaCall _mediaCall in _list)
                 {
