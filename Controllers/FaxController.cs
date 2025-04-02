@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Text.Json.Nodes;
 using WisePBX.NET8.Models.Wise;
@@ -47,7 +48,7 @@ namespace WisePBX.NET8.Controllers
         [Route(template: "Fax/AssignAgent")]
         public IActionResult AssignAgent([FromBody] JsonObject p)
         {
-            List<int>? mediaIds = p["mediaIds"]?.GetValue<List<int>>();
+            List<int>? mediaIds = JsonConvert.DeserializeObject<List<int>>(p!["mediaIds"]!.ToJsonString());
             int assignTo = Convert.ToInt32((p["assignTo"] ?? "-1").ToString());
             int updatedBy = Convert.ToInt32((p["updatedBy"] ?? "-1").ToString());
             if (mediaIds == null || assignTo == -1 || updatedBy == -1)
@@ -109,7 +110,7 @@ namespace WisePBX.NET8.Controllers
             if (_mediaCall == null) 
                 return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchRecord, function = WiseFunc.Fax.GetContent });
 
-            string _file = (_mediaCall.Filename??"").Replace("//" + hostName + "/", webUrl + "/").Replace(@"\", @"/");
+            string _file = (_mediaCall.Filename??"").Replace(@"\", @"/").Replace("//" + hostName + "/", webUrl + "/");
             var data = new 
             {
                 FileName = Path.GetFileName(_mediaCall.Filename),

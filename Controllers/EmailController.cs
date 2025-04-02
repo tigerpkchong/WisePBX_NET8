@@ -109,7 +109,7 @@ namespace WisePBX.NET8.Controllers
 
 
             
-            string _file = _mediaCall.Filename??"";
+            string _file = (_mediaCall.Filename??"").Replace($@"\\{hostName}\", $@"{hostDrive}:\"); 
             Regex _rgx = new("\r?\n");
             MimeMessage message = MimeMessage.Load(_file);
             string _content = message.HtmlBody??_rgx.Replace(message.TextBody, "<br/>");

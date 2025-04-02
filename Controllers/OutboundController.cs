@@ -65,13 +65,15 @@ namespace WisePBX.NET8.Controllers
         
         [HttpPost]
         public async Task<IActionResult> UploadAttachment(
-            [FromForm] int caseNo, [FromForm] int agentId, [FromForm] int campaignId, [FromForm] List<IFormFile> files)
+            [FromForm] int? caseNo, [FromForm] int agentId, [FromForm] int? campaignId, [FromForm] List<IFormFile> files)
         {
             if (files.Count == 0)
                 return Ok(new { result = WiseResult.Fail, details = "No File Upload." });
+            if(caseNo == null && campaignId==null)
+                return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
 
             string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
-            string _tmpFolder = ((campaignId == 0) ? "C" + caseNo : "O" + campaignId) + "-" + agentId + "-" + DateTime.Now.Ticks;
+            string _tmpFolder = ((campaignId == null) ? "C" + caseNo : "O" + campaignId) + "-" + agentId + "-" + DateTime.Now.Ticks;
             string _fillFolder = Path.Combine(fileUploadPath, _tmpFolder);
             Directory.CreateDirectory(_fillFolder);
             var data = new List<dynamic>();
