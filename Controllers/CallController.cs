@@ -99,9 +99,10 @@ namespace WisePBX.NET8.Controllers
             if (!data.Any()) return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchRecord });
             return Ok(new { result = WiseResult.Success, data });
         }
-
-        [HttpPost]
-        [Route(template: "Call/GetVoiceLog")]
+        
+        //[HttpPost]
+        //[Route(template: "Call/GetVoiceLog")]
+        /*
         public IActionResult GetVoiceLog([FromBody] JsonObject p)
         {
             try
@@ -165,6 +166,7 @@ namespace WisePBX.NET8.Controllers
             }
 
         }
+        */
         [HttpPost]
         [Route(template: "Call/GetVoiceLogEx")]
         public IActionResult GetVoiceLogEx([FromBody] JsonObject p)
