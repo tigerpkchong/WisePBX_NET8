@@ -61,7 +61,6 @@ namespace WisePBX.NET8.Controllers
                               && m.CallType == 6
                               select m).Take(1000).ToList();
 
-            Regex _rgx = new("\r?\n", RegexOptions.NonBacktracking);
             var data = new List<dynamic>();
             foreach (MediaCall _medialCall in _mediaList)
             {
@@ -446,7 +445,6 @@ namespace WisePBX.NET8.Controllers
                      where l.Project == projectName && l.Action == "Junk Mail"
                      select m).ToList();
 
-                Regex _rgx = new("\r?\n", RegexOptions.NonBacktracking);
                 List<dynamic> _emailList=[];
                 foreach (MediaCall _mediaCall in _list)
                 {
