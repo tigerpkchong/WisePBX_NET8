@@ -6,7 +6,7 @@ using WisePBX.NET8.Models.Wise;
 
 namespace WisePBX.NET8.Controllers
 {
-    [Route(template: "api/[controller]")]
+    [Route(template: "api")]
     [ApiController]
     public class FaxController(IConfiguration iConfig, WiseEntities wiseEntities) 
         : WiseBaseController(wiseEntities)
@@ -15,7 +15,7 @@ namespace WisePBX.NET8.Controllers
         private readonly WiseEntities _wisedb = wiseEntities;
 
         [HttpPost]
-        [Route(template: "GetCount")]
+        [Route(template: "Fax/GetCount")]
         public IActionResult GetCount([FromBody] JsonObject p)
         {
             if (p == null) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
@@ -29,7 +29,7 @@ namespace WisePBX.NET8.Controllers
         }
 
         [HttpPost]
-        [Route(template: "SetHandled")]
+        [Route(template: "Fax/SetHandled")]
         public IActionResult SetHandled([FromBody] JsonObject p)
         {
             int mediaId = Convert.ToInt32((p["mediaId"] ?? "0").ToString());
@@ -41,7 +41,7 @@ namespace WisePBX.NET8.Controllers
         }
 
         [HttpPost]
-        [Route(template: "AssignAgent")]
+        [Route(template: "Fax/AssignAgent")]
         public IActionResult AssignAgent([FromBody] JsonObject p)
         {
             List<int>? mediaIds = p["mediaIds"]?.GetValue<List<int>>();
@@ -54,7 +54,7 @@ namespace WisePBX.NET8.Controllers
         }
 
         [HttpPost]
-        [Route(template: "GetList")]
+        [Route(template: "Fax/GetList")]
         public IActionResult GetList([FromBody] JsonObject p)
         {
             if (p == null) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
@@ -90,7 +90,7 @@ namespace WisePBX.NET8.Controllers
 
         }
         [HttpPost]
-        [Route(template: "GetContent")]
+        [Route(template: "Fax/GetContent")]
         public IActionResult GetContent([FromBody] JsonObject p)
         {
             int id = Convert.ToInt32((p["id"]??"-1").ToString());

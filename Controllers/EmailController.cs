@@ -19,7 +19,7 @@ using WisePBX.NET8.Models.Wise;
 
 namespace WisePBX.NET8.Controllers
 {
-    [Route(template: "api/[controller]")]
+    [Route(template: "api")]
     [ApiController]
     public class EmailController : WiseBaseController
     {
@@ -41,7 +41,7 @@ namespace WisePBX.NET8.Controllers
         }
 
         [HttpPost]
-        [Route(template: "GetList")]
+        [Route(template: "Email/GetList")]
         public IActionResult GetList([FromBody] JsonObject p)
         {
             string dnis = (p["dnis"]??"").ToString();
@@ -79,7 +79,7 @@ namespace WisePBX.NET8.Controllers
         }
 
         [HttpPost]
-        [Route(template: "GetCount")]
+        [Route(template: "Email/GetCount")]
         public IActionResult GetCount([FromBody] JsonObject p)
         {
             string dnis = (p["dnis"] ?? "").ToString();
@@ -92,7 +92,7 @@ namespace WisePBX.NET8.Controllers
         }
 
         [HttpPost]
-        [Route(template: "GetContent")]
+        [Route(template: "Email/GetContent")]
         public IActionResult GetContent([FromBody] JsonObject p)
         {
             int id =Convert.ToInt32((p["id"]??"0").ToString());
@@ -182,7 +182,7 @@ namespace WisePBX.NET8.Controllers
             
         }
         [HttpPost]
-        [Route(template: "SetHandled")]
+        [Route(template: "Email/SetHandled")]
         public IActionResult SetHandled([FromBody] JsonObject p)
         {
             int mediaId = Convert.ToInt32((p["mediaId"]??"0").ToString());
@@ -195,7 +195,7 @@ namespace WisePBX.NET8.Controllers
         }
 
         [HttpPost]
-        [Route(template: "AssignAgent")]
+        [Route(template: "Email/AssignAgent")]
         public IActionResult AssignAgent([FromBody] JsonObject p)
         {
             List<int>? mediaIds = p["mediaIds"]?.GetValue<List<int>>();
@@ -208,7 +208,7 @@ namespace WisePBX.NET8.Controllers
         }
 
         [HttpPost]
-        [Route(template: "UploadContent")]
+        [Route(template: "Email/UploadContent")]
         public IActionResult UploadContent([FromBody] JsonObject p)
         {
             try
@@ -244,7 +244,7 @@ namespace WisePBX.NET8.Controllers
         }
 
         [HttpPost]
-        [Route(template: "RemoveContent")]
+        [Route(template: "Email/RemoveContent")]
         public IActionResult RemoveContent([FromBody] JsonObject p)
         {
             try
@@ -269,7 +269,7 @@ namespace WisePBX.NET8.Controllers
         }
 
         [HttpPost]
-        [Route(template: "GetSetting")]
+        [Route(template: "Email/GetSetting")]
         public IActionResult GetSetting([FromBody] JsonObject p)
         {
             try
@@ -312,7 +312,7 @@ namespace WisePBX.NET8.Controllers
         }
 
         [HttpPost]
-        [Route(template: "AddSetting")]
+        [Route(template: "Email/AddSetting")]
         public IActionResult AddSetting([FromBody] JsonObject p)
         {
             try
@@ -396,7 +396,7 @@ namespace WisePBX.NET8.Controllers
         }
 
         [HttpPost]
-        [Route(template: "DelSetting")]
+        [Route(template: "Email/DelSetting")]
         public IActionResult DelSetting([FromBody] JsonObject p)
         {
             try
@@ -440,7 +440,7 @@ namespace WisePBX.NET8.Controllers
         }
 
         [HttpPost]
-        [Route(template: "GetJunkMails")]
+        [Route(template: "Email/GetJunkMails")]
         public IActionResult GetJunkMails([FromBody] JsonObject p)
         {
             try

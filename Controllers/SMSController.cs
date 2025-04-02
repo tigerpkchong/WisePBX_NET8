@@ -5,13 +5,14 @@ using WisePBX.NET8.Models.Wise;
 
 namespace WisePBX.NET8.Controllers
 {
-    [Route("api/[controller]/[action]")]
+    [Route(template : "api")]
     [ApiController]
     public class SmsController(WiseEntities wiseEntities) : ControllerBase
     {
         private readonly WiseEntities _wisedb= wiseEntities;
 
         [HttpPost]
+        [Route(template: "Sms/GetContent")]
         public IActionResult GetContent([FromBody] JsonObject p)
         {
             int id = (p["id"] == null) ? -1 : Convert.ToInt32(p["id"]?.ToString());

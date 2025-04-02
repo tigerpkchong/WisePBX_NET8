@@ -7,7 +7,7 @@ using WisePBX.NET8.Models.Wise;
 
 namespace WisePBX.NET8.Controllers
 {
-    [Route("api/[controller]/[action]")]
+    [Route(template: "api")]
     [ApiController]
     public class VmailController(IConfiguration iConfig, WiseEntities wiseEntities) 
         : WiseBaseController(wiseEntities)
@@ -19,7 +19,7 @@ namespace WisePBX.NET8.Controllers
         private readonly WiseEntities _wisedb = wiseEntities;
 
         [HttpPost]
-        [ActionName("GetCount")]
+        [Route(template: "Vmail/GetCount")]
         public IActionResult GetCount([FromBody] JsonObject p)
         {
             if (p == null) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
@@ -33,7 +33,7 @@ namespace WisePBX.NET8.Controllers
         }
 
         [HttpPost]
-        [ActionName("GetList")]
+        [Route(template: "Vmail/GetList")]
         public IActionResult GetList([FromBody] JsonObject p)
         {
             if (p == null) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
@@ -77,7 +77,7 @@ namespace WisePBX.NET8.Controllers
         }
 
         [HttpPost]
-        [ActionName("SetHandled")]
+        [Route(template: "Vmail/SetHandled")]
         public IActionResult SetHandled([FromBody] JsonObject p)
         {
             int mediaId = Convert.ToInt32((p["mediaId"]??"0").ToString());
@@ -89,6 +89,7 @@ namespace WisePBX.NET8.Controllers
         }
 
         [HttpPost]
+        [Route(template: "Vmail/SetRead")]
         public IActionResult SetRead([FromBody] JsonObject p)
         {
             int updatedBy = Convert.ToInt32((p["updatedBy"] ?? "0").ToString());
@@ -107,7 +108,7 @@ namespace WisePBX.NET8.Controllers
         }
 
         [HttpPost]
-        [ActionName("AssignAgent")]
+        [Route(template: "Vmail/AssignAgent")]
         public IActionResult AssignAgent([FromBody] JsonObject p)
         {
 
@@ -121,7 +122,7 @@ namespace WisePBX.NET8.Controllers
         }
 
         [HttpPost]
-        [ActionName("GetContent")]
+        [Route(template: "Vmail/GetContent")]
         public IActionResult GetContent([FromBody] JsonObject p)
         {
             int id = Convert.ToInt32((p["id"]??"-1").ToString());
@@ -154,6 +155,7 @@ namespace WisePBX.NET8.Controllers
         }
 
         [HttpPost]
+        [Route(template: "Vmail/GetCallId")]
         public IActionResult GetCallId([FromBody] JsonObject p)
         {
             int caseId = Convert.ToInt32((p["caseId"]??"-1").ToString());

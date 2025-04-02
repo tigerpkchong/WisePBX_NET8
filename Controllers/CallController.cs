@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 using static Org.BouncyCastle.Math.EC.ECCurve;
 namespace WisePBX.NET8.Controllers
 {
-    [Route(template: "api/[controller]")]
+    [Route(template: "api")]
     [ApiController]
     public class CallController(IConfiguration iConfig, WiseEntities wiseEntities) 
         : WiseBaseController(wiseEntities)
@@ -20,7 +20,7 @@ namespace WisePBX.NET8.Controllers
         private readonly WiseEntities _wisedb = wiseEntities;
         
         [HttpPost]
-        [Route(template: "GetContent")]
+        [Route(template: "Call/GetContent")]
         public IActionResult GetContent([FromBody] JsonObject p)
         {
             int id = Convert.ToInt32((p["id"]??"0").ToString());
@@ -55,7 +55,7 @@ namespace WisePBX.NET8.Controllers
         }
         
         [HttpPost]
-        [Route(template: "GetVoiceMail")]
+        [Route(template: "Call/GetVoiceMail")]
         public IActionResult GetVoiceMail([FromBody] JsonObject p)
         {
             DateTime startDate = Convert.ToDateTime((p["startDate"]??"").ToString());
@@ -101,7 +101,7 @@ namespace WisePBX.NET8.Controllers
         }
 
         [HttpPost]
-        [Route(template: "GetVoiceLog")]
+        [Route(template: "Call/GetVoiceLog")]
         public IActionResult GetVoiceLog([FromBody] JsonObject p)
         {
             try
@@ -166,7 +166,7 @@ namespace WisePBX.NET8.Controllers
 
         }
         [HttpPost]
-        [Route(template: "GetVoiceLogEx")]
+        [Route(template: "Call/GetVoiceLogEx")]
         public IActionResult GetVoiceLogEx([FromBody] JsonObject p)
         {
             try
@@ -256,7 +256,7 @@ namespace WisePBX.NET8.Controllers
         }
 
         [HttpPost]
-        [Route(template: "GetAgentList")]
+        [Route(template: "Call/GetAgentList")]
         public IActionResult GetAgentList()
         {
             try
@@ -279,7 +279,7 @@ namespace WisePBX.NET8.Controllers
 
 
         [HttpPost]
-        [Route(template: "GetAgentInfo")]
+        [Route(template: "Call/GetAgentInfo")]
         public IActionResult GetAgentInfo([FromBody] JsonObject p)
         {
             try
@@ -304,7 +304,7 @@ namespace WisePBX.NET8.Controllers
         }
 
         [HttpPost]
-        [Route(template: "GetOutboundANI")]
+        [Route(template: "Call/GetOutboundANI")]
         public IActionResult GetOutboundANI([FromBody] JsonObject p)
         {
             try
