@@ -100,73 +100,6 @@ namespace WisePBX.NET8.Controllers
             return Ok(new { result = WiseResult.Success, data });
         }
         
-        //[HttpPost]
-        //[Route(template: "Call/GetVoiceLog")]
-        /*
-        public IActionResult GetVoiceLog([FromBody] JsonObject p)
-        {
-            try
-            {
-                DateTime startDate = Convert.ToDateTime((p["startDate"] ?? "").ToString());
-                DateTime endDate = Convert.ToDateTime((p["endDate"] ?? "").ToString()).AddDays(1);
-
-                int agentId = Convert.ToInt32((p["agentId"]??"-1").ToString());
-                string phoneNo = (p["phoneNo"]??"").ToString();
-                
-                if (phoneNo != "" && phoneNo.Length < 8) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
-
-                string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
-
-                var data = (from c in _wisedb.Calls
-                        join v in _wisedb.Voicelogs on c.CallID equals v.CallID
-                        where (c.Calltype >= 1 && c.Calltype <= 5)
-                        && v.Time_stamp >= startDate && v.Time_stamp < endDate
-                        && (phoneNo == "" || c.ANI == phoneNo || c.ANI == phoneNo)
-                        && (agentId == -1 || ((c.dDeviceType == 3 && c.dDeviceID == agentId) || (c.oDeviceType == 3 && c.oDeviceID == agentId)))
-                        orderby v.SerialID
-                        select new
-                        {
-                            c.CallID,
-                            FilePath = v.Filepath,
-                            FileUrl = v.Filepath.Replace(@"\", @"/").Replace("//" + hostName + "/", webUrl + "/"),
-                            TimeStamp = c.Begintime,
-                            c.DNIS,
-                            c.ANI,
-                                
-                            Duration = c.Talktime,
-                            dStaffNo = (c.dDeviceType == 3) ? c.oDeviceID.ToString() : "",
-                            oStaffNo = (c.oDeviceType == 3) ? c.oDeviceID.ToString() : "",
-                            bOutbound = (c.Calltype == 1) ? "Outbound" : "",
-                            bInbound = (c.Calltype == 2 || (c.Calltype == 4 && c.dDeviceType == 3)) ? "Inbound" : "",
-                            bConference = (c.Calltype == 5) ? "Conference" : "",
-                            bTransfer = (c.Calltype == 4 && c.dDeviceType != 3) ? "Transfer" : "",
-                            bInterComm = (c.Calltype == 3) ? "InterComm" : "",
-                            PhoneNo = (c.Calltype == 3)? "" : c.ANI,
-                        }).AsEnumerable().Select(x => new 
-                        {
-                            CallId = x.CallID,
-                            CallType = x.bOutbound + x.bInbound + x.bConference + x.bTransfer + x.bInterComm,
-                            x.FilePath,
-                            FileName = x.FilePath[(x.FilePath.LastIndexOf('\\') + 1)..],
-                            x.FileUrl,
-                            x.TimeStamp,
-                            PhoneNo = x.bOutbound != ""? x.DNIS : x.PhoneNo ,
-                            StaffNo = x.dStaffNo + ((x.dStaffNo != "" && x.oStaffNo != "") ? "," : "") + x.oStaffNo,
-                            x.Duration,
-
-                        }).ToList();
-                
-                
-                if (data.Count == 0) return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchRecord });
-                return Ok(new { result = WiseResult.Success, data });
-            }
-            catch (Exception e)
-            {
-                return Ok(new { result = WiseResult.Fail, data = e.Message });
-            }
-
-        }
-        */
         [HttpPost]
         [Route(template: "Call/GetVoiceLogEx")]
         public IActionResult GetVoiceLogEx([FromBody] JsonObject p)
@@ -196,7 +129,7 @@ namespace WisePBX.NET8.Controllers
                 if (p["callId"] != null)
                 {
                     if (p["callId"]?.GetType().Name == "JsonArray")
-                        callId = JsonConvert.DeserializeObject<int[]>(p!["callId"]!.ToJsonString());
+                        callId = JsonConvert.DeserializeObject<int[]>(p!["callId"]!.ToJsonString()) ??[];
                     else
                         callId = [p!["callId"]!.GetValue<int>()];
                 }
