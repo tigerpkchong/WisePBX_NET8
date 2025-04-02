@@ -147,9 +147,6 @@ namespace WisePBX.NET8.Controllers
                 int serviceId = Convert.ToInt32((p["serviceId"]??"-1").ToString());
                 int groupId = Convert.ToInt32((p["groupId"] ?? "-1").ToString());
 
-                if (serviceId == -1 || groupId == -1) 
-                    return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function= WiseFunc.Config.GetMonitorStatistics });
-
                 string? _grpType = (from a in _wisedb.Service_ACDGroups
                                    where a.ServiceID == serviceId &&
                                    a.ACDGroupID == groupId
