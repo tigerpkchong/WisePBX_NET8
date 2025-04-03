@@ -84,7 +84,7 @@ namespace WisePBX.NET8.Controllers
         [Route(template: "Vmail/SetHandled")]
         public IActionResult SetHandled([FromBody] JsonObject p)
         {
-            int mediaId = Convert.ToInt32((p["mediaId"]??"0").ToString());
+            int mediaId = Convert.ToInt32((p[WiseParam.MediaId]??"0").ToString());
             string caseNo = (p["caseNo"] ?? "0").ToString();
             int updatedBy = Convert.ToInt32((p["updatedBy"] ?? "0").ToString());
             if (mediaId <= 0) 
@@ -98,16 +98,16 @@ namespace WisePBX.NET8.Controllers
         public IActionResult SetRead([FromBody] JsonObject p)
         {
             int updatedBy = Convert.ToInt32((p["updatedBy"] ?? "0").ToString());
-            if (p["mediaId"] == null)
+            if (p[WiseParam.MediaId] == null)
                 return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = WiseFunc.Vmail.SetRead });
-            if (p["mediaId"]?.GetType().Name == "JArray")
+            if (p[WiseParam.MediaId]?.GetType().Name == "JArray")
             {
-                int[]? mediaIds = p["mediaId"]?.GetValue<int[]>();
+                int[]? mediaIds = p[WiseParam.MediaId]?.GetValue<int[]>();
                 return base.SetRead(7, (mediaIds ?? []), updatedBy);
             }
             else
             {
-                int mediaId = Convert.ToInt32(p["mediaId"]?.ToString());
+                int mediaId = Convert.ToInt32(p[WiseParam.MediaId]?.ToString());
                 return base.SetRead(7, mediaId, updatedBy);
             }
         }

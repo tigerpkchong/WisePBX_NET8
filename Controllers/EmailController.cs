@@ -48,7 +48,7 @@ namespace WisePBX.NET8.Controllers
         public IActionResult GetList([FromBody] JsonObject p)
         {
             string dnis = (p["dnis"]??"").ToString();
-            int agentId = Convert.ToInt32((p["agentId"] ?? "-1").ToString());
+            int agentId = Convert.ToInt32((p[WiseParam.AgentId] ?? "-1").ToString());
             int handled = Convert.ToInt32((p["handled"] ?? "0").ToString());
 
             if (dnis == "" || agentId <= 0) 
@@ -85,7 +85,7 @@ namespace WisePBX.NET8.Controllers
         public IActionResult GetCount([FromBody] JsonObject p)
         {
             string dnis = (p["dnis"] ?? "").ToString();
-            int agentId = Convert.ToInt32((p["agentId"] ?? "-1").ToString());
+            int agentId = Convert.ToInt32((p[WiseParam.AgentId] ?? "-1").ToString());
             int handled = Convert.ToInt32((p["handled"] ?? "0").ToString());
 
             if (dnis == "" || agentId <= 0) 
@@ -203,7 +203,7 @@ namespace WisePBX.NET8.Controllers
         {
             try
             {
-                int agentId = Convert.ToInt32((p["agentId"]??"0").ToString());
+                int agentId = Convert.ToInt32((p[WiseParam.AgentId]??"0").ToString());
                 string content = (p["content"] ?? "").ToString();
                 string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
 
@@ -233,7 +233,7 @@ namespace WisePBX.NET8.Controllers
         {
             try
             {
-                int agentId = Convert.ToInt32((p["agentId"] ?? "0").ToString());
+                int agentId = Convert.ToInt32((p[WiseParam.AgentId] ?? "0").ToString());
                 string filePath = (p["filePath"]??"").ToString();
                 if (filePath == "")
                     return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = WiseFunc.Email.RemoveContent });
@@ -258,7 +258,7 @@ namespace WisePBX.NET8.Controllers
         {
             try
             {
-                string projectName = (p["projectName"]??"").ToString();
+                string projectName = (p[WiseParam.ProjectName]??"").ToString();
 
                 if (projectName == "")
                     return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = WiseFunc.Email.GetSetting });
@@ -301,10 +301,10 @@ namespace WisePBX.NET8.Controllers
         {
             try
             {
-                string projectName = (p["projectName"] ?? "").ToString();
+                string projectName = (p[WiseParam.ProjectName] ?? "").ToString();
                 string emailAddress = (p["emailAddress"] ?? "").ToString();
                 string emailType = (p["emailType"] ?? "").ToString();
-                int agentId = Convert.ToInt32((p["agentId"] ?? "-1").ToString());
+                int agentId = Convert.ToInt32((p[WiseParam.AgentId] ?? "-1").ToString());
                 if (projectName == "" || emailAddress == "" || agentId == -1)
                     return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = WiseFunc.Email.AddSetting });
 
@@ -385,10 +385,10 @@ namespace WisePBX.NET8.Controllers
         {
             try
             {
-                string projectName = (p["projectName"] ?? "").ToString();
+                string projectName = (p[WiseParam.ProjectName] ?? "").ToString();
                 string emailAddress = (p["emailAddress"] ?? "").ToString();
                 string emailType = (p["emailType"] ?? "").ToString();
-                int agentId = Convert.ToInt32((p["agentId"] ?? "-1").ToString());
+                int agentId = Convert.ToInt32((p[WiseParam.AgentId] ?? "-1").ToString());
                 if (projectName == "" || emailAddress == "" || emailType == "" || agentId == -1)
                     return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = WiseFunc.Email.DelSetting });
                 
@@ -429,7 +429,7 @@ namespace WisePBX.NET8.Controllers
         {
             try
             {
-                string projectName = (p["projectName"] ?? "").ToString();
+                string projectName = (p[WiseParam.ProjectName] ?? "").ToString();
 
                 if (projectName == "")
                     return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = WiseFunc.Email.GetJunkMails });

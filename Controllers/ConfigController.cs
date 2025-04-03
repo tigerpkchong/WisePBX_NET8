@@ -73,7 +73,7 @@ namespace WisePBX.NET8.Controllers
         {
             try
             {
-                int agentId = (p == null) ? -1 : Convert.ToInt32((p["agentId"]??"-1").ToString());
+                int agentId = (p == null) ? -1 : Convert.ToInt32((p[WiseParam.AgentId]??"-1").ToString());
 
                 var data = (from i in _wisedb.AgentInfos
                             where (agentId == -1 || i.AgentID == agentId)
@@ -97,10 +97,10 @@ namespace WisePBX.NET8.Controllers
         {
             try
             {
-                if (p == null || p["agentIds"] == null) 
+                if (p == null || p[WiseParam.AgentIds] == null) 
                     return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = WiseFunc.Config.GetSupervisorList});
                 
-                List<int>? agentIds = JsonConvert.DeserializeObject<List<int>>(p!["agentIds"]!.ToJsonString()) ?? [];
+                List<int>? agentIds = JsonConvert.DeserializeObject<List<int>>(p![WiseParam.AgentIds]!.ToJsonString()) ?? [];
                 
                 var data = (from i in _wisedb.AgentInfos
                             where agentIds.Contains(i.AgentID)
@@ -126,7 +126,7 @@ namespace WisePBX.NET8.Controllers
         {
             try
             {
-                int agentId = Convert.ToInt32((p["agentId"]??"-1").ToString());
+                int agentId = Convert.ToInt32((p[WiseParam.AgentId]??"-1").ToString());
                 if (agentId == -1) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = WiseFunc.Config.GetAgentInfo });
 
                 var info = (from i in _wisedb.AgentInfos
@@ -149,7 +149,7 @@ namespace WisePBX.NET8.Controllers
         public IActionResult GetAgentName([FromBody] JsonObject p)
         {
             if (p == null) return Ok(new { result = WiseResult.Error, details = WiseError.InvalidParameters });
-            int[]? agentIds = (p["agentIds"] == null) ? null : p["agentIds"]?.GetValue<int[]>();
+            int[]? agentIds = (p[WiseParam.AgentIds] == null) ? null : p[WiseParam.AgentIds]?.GetValue<int[]>();
             if (agentIds == null) return Ok(new { result = WiseResult.Error, details = WiseError.InvalidParameters });
 
             var _r = (from m in _wisedb.AgentInfos
@@ -163,11 +163,11 @@ namespace WisePBX.NET8.Controllers
         public IActionResult GetACDGroupAccessList([FromBody] JsonObject p)
         {
             if (p == null) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = WiseFunc.Config.GetACDGroupAccessList });
-            int agentId = Convert.ToInt32((p["agentId"] ?? "-1").ToString());
+            int agentId = Convert.ToInt32((p[WiseParam.AgentId] ?? "-1").ToString());
             
             try
             {
-                if (p["agentId"] == null)
+                if (p[WiseParam.AgentId] == null)
                 {
                     var _list = (from a in _wisedb.ACDGroups orderby a.AcdGroupID select a).ToList();
                     return Ok(new { result = WiseResult.Success, data = _list, function = WiseFunc.Config.GetACDGroupAccessList });
@@ -201,7 +201,7 @@ namespace WisePBX.NET8.Controllers
         [Route(template: "Config/UpdateACDGroupAccessList")]
         public IActionResult UpdateACDGroupAccessList([FromBody] JsonObject p)
         {
-            int agentId = Convert.ToInt32((p["agentId"] ?? "-1").ToString());
+            int agentId = Convert.ToInt32((p[WiseParam.AgentId] ?? "-1").ToString());
             if (agentId == -1 || p["setting"] == null) 
                 return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function= WiseFunc.Config.UpdateACDGroupAccessList });
             
@@ -259,7 +259,7 @@ namespace WisePBX.NET8.Controllers
         [Route(template: "Config/AddACDGroupAccess")]
         public IActionResult AddACDGroupAccess([FromBody] JsonObject p)
         {
-            int agentId = Convert.ToInt32((p["agentId"] ?? "-1").ToString());
+            int agentId = Convert.ToInt32((p[WiseParam.AgentId] ?? "-1").ToString());
             int groupId = Convert.ToInt32((p["groupId"] ?? "-1").ToString());
             if (agentId == -1 || groupId == -1) 
                 return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = WiseFunc.Config.AddACDGroupAccess });
@@ -295,7 +295,7 @@ namespace WisePBX.NET8.Controllers
         [Route(template: "Config/DelACDGroupAccess")]
         public IActionResult DelACDGroupAccess([FromBody] JsonObject p)
         {
-            int agentId = Convert.ToInt32((p["agentId"] ?? "-1").ToString());
+            int agentId = Convert.ToInt32((p[WiseParam.AgentId] ?? "-1").ToString());
             int groupId = Convert.ToInt32((p["groupId"] ?? "-1").ToString());
 
             if (agentId == -1 || groupId == -1) 

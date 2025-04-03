@@ -157,12 +157,12 @@ namespace WisePBX.NET8.Controllers
                 string ani = (p["ani"] ?? "").ToString();
                 string dnis = (p["dnis"] ?? "").ToString();
                 int[]? callId =[];
-                if (p["callId"] != null)
+                if (p[WiseParam.CallId] != null)
                 {
-                    if (p["callId"]?.GetType().Name == "JsonArray")
-                        callId = JsonConvert.DeserializeObject<int[]>(p!["callId"]!.ToJsonString());
+                    if (p[WiseParam.CallId]?.GetType().Name == "JsonArray")
+                        callId = JsonConvert.DeserializeObject<int[]>(p![WiseParam.CallId]!.ToJsonString());
                     else
-                        callId = [p!["callId"]!.GetValue<int>()];
+                        callId = [p![WiseParam.CallId]!.GetValue<int>()];
                 }
                 
                 string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";

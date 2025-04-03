@@ -19,7 +19,7 @@ namespace WisePBX.NET8.Controllers
         {
             int callType = (p["callType"] == null) ? 0 : Convert.ToInt32(p["callType"]?.ToString());
             int caseId = (p["caseId"] == null) ? -1 : Convert.ToInt32(p["caseId"]?.ToString());
-            int agentId = (p["agentId"] == null) ? -1 : Convert.ToInt32(p["agentId"]?.ToString());
+            int agentId = (p[WiseParam.AgentId] == null) ? -1 : Convert.ToInt32(p[WiseParam.AgentId]?.ToString());
             if (callType==0 || caseId == -1 || agentId == -1)
                 return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
             int _callId = 0, _count = 0;
@@ -41,7 +41,7 @@ namespace WisePBX.NET8.Controllers
         [Route(template: "Outbound/CreateCaseId")]
         public IActionResult CreateCaseId([FromBody] JsonObject p)
         {
-            int agentId = (p["agentId"] == null) ? -1 : Convert.ToInt32(p["agentId"]?.ToString());
+            int agentId = (p[WiseParam.AgentId] == null) ? -1 : Convert.ToInt32(p[WiseParam.AgentId]?.ToString());
             if (agentId == -1)
                 return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
             var _objCase = new MediaCall_CaseID
