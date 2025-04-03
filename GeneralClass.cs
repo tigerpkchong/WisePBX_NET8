@@ -18,6 +18,15 @@
         public static readonly string NoSuchAgent = "No such agent.";
         public static readonly string NoSuchRecord = "No such record.";
     }
+
+    public static class WiseParam
+    {
+        public static readonly string AgentId = "agentId";
+        public static readonly string CallId = "callId";
+        public static readonly string AgentIds = "agentIds";
+        public static readonly string ProjectName = "projectName";
+        public static readonly string MediaId = "mediaId";
+    }
     public static class WiseFunc
     {
         public static class Config

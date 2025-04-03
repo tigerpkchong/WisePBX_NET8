@@ -71,7 +71,7 @@ namespace WisePBX.NET8.Controllers
             DateTime startDate = Convert.ToDateTime((p["startDate"] ?? "").ToString());
             DateTime endDate = Convert.ToDateTime((p["endDate"] ?? "").ToString()).AddDays(1);
 
-            int agentId = Convert.ToInt32((p["agentId"] ?? "-1").ToString());
+            int agentId = Convert.ToInt32((p[WiseParam.AgentId] ?? "-1").ToString());
             string phoneNo = (p["phoneNo"] ?? "").ToString();
             string dnis = (p["dnis"] ?? "").ToString();
             string ani = (p["ani"] ?? "").ToString();
@@ -144,10 +144,10 @@ namespace WisePBX.NET8.Controllers
                 int serviceId = (p["serviceId"] == null) ? -1 : Convert.ToInt32((p["serviceId"]??"-1").ToString());
 
                 string[]? agentId;
-                if (p!["agentId"]!?.GetType().Name == "JsonArray")
-                    agentId = JsonConvert.DeserializeObject<string[]>(p!["agentId"]!.ToJsonString());
+                if (p![WiseParam.AgentId]!?.GetType().Name == "JsonArray")
+                    agentId = JsonConvert.DeserializeObject<string[]>(p![WiseParam.AgentId]!.ToJsonString());
                 else
-                    agentId = (p["agentId"]==null)? []: [p!["agentId"]!.ToString()];
+                    agentId = (p[WiseParam.AgentId]==null)? []: [p![WiseParam.AgentId]!.ToString()];
                 
                 
                 agentId = (agentId??[]).Select(m => "|" + m + "|").ToArray();
@@ -244,7 +244,7 @@ namespace WisePBX.NET8.Controllers
         {
             try
             {
-                int agentId = Convert.ToInt32((p["agentId"]??"-1").ToString());
+                int agentId = Convert.ToInt32((p[WiseParam.AgentId]??"-1").ToString());
                 if (agentId == -1) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
 
                 var info = (from i in _wisedb.AgentInfos
