@@ -95,7 +95,7 @@ namespace WisePBX.NET8.Controllers
             return base.GetCount(6, agentId, dnis, handled);
         }
 
-        internal dynamic? ToAttachment(MimeEntity entity)
+        internal static dynamic? ToAttachment(MimeEntity entity)
         {
             if(entity is MimePart mimePart)
             {

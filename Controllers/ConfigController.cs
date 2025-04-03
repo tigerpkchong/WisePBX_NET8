@@ -10,7 +10,7 @@ namespace WisePBX.NET8.Controllers
 {
     [Route(template: "api")]
     [ApiController]
-    public class ConfigController(WiseEntities _wisedb, WiseSPEntities _wiseSPdb) 
+    public class ConfigController(WiseEntities _wisedb) 
         : ControllerBase
     {
         [HttpPost]
@@ -144,7 +144,19 @@ namespace WisePBX.NET8.Controllers
                 return Ok(new { result = WiseResult.Fail, data = e.Message, function = WiseFunc.Config.GetAgentInfo });
             }
         }
-        
+        [HttpPost]
+        [Route(template: "Config/GetAgentName")]
+        public IActionResult GetAgentName([FromBody] JsonObject p)
+        {
+            if (p == null) return Ok(new { result = WiseResult.Error, details = WiseError.InvalidParameters });
+            int[]? agentIds = (p["agentIds"] == null) ? null : p["agentIds"]?.GetValue<int[]>();
+            if (agentIds == null) return Ok(new { result = WiseResult.Error, details = WiseError.InvalidParameters });
+
+            var _r = (from m in _wisedb.AgentInfos
+                      where agentIds.Contains(m.AgentID)
+                      select new { m.AgentID, m.AgentName }).ToList();
+            return Ok(new { result = WiseResult.Success, data = _r });
+        }
 
         [HttpPost]
         [Route(template: "Config/GetACDGroupAccessList")]
