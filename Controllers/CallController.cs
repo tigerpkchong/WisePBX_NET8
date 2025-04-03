@@ -7,23 +7,33 @@ using System.Text.Json.Nodes;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using System.Runtime.CompilerServices;
 using static Org.BouncyCastle.Math.EC.ECCurve;
+using Microsoft.Extensions.Logging;
+using Microsoft.VisualBasic;
+using Org.BouncyCastle.Asn1.Ocsp;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Net;
+using System.Linq;
+using Org.BouncyCastle.Asn1.X509;
+using System.Diagnostics.Metrics;
+using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 namespace WisePBX.NET8.Controllers
 {
     [Route(template: "api")]
     [ApiController]
-    public class CallController(IConfiguration iConfig, WiseEntities wiseEntities) 
+    public class CallController(IConfiguration iConfig, WiseEntities wiseEntities)
         : WiseBaseController(wiseEntities)
     {
         private readonly string hostDrive = iConfig.GetValue<string>("hostDrive") ?? "";
         private readonly string hostName = iConfig.GetValue<string>("HostName") ?? "";
 
         private readonly WiseEntities _wisedb = wiseEntities;
-        
+
         [HttpPost]
         [Route(template: "Call/GetContent")]
         public IActionResult GetContent([FromBody] JsonObject p)
         {
-            int id = Convert.ToInt32((p["id"]??"0").ToString());
+            int id = Convert.ToInt32((p["id"] ?? "0").ToString());
             if (id == 0) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
             string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
 
@@ -35,14 +45,14 @@ namespace WisePBX.NET8.Controllers
                         orderby v.SerialID
                         select new
                         {
-                            FileName = v.Filepath??"",
-                            FileUrl = (v.Filepath ?? "").Replace(@"\", @"/").Replace("//" + hostName + "/", webUrl +"/"),
+                            FileName = v.Filepath ?? "",
+                            FileUrl = (v.Filepath ?? "").Replace(@"\", @"/").Replace("//" + hostName + "/", webUrl + "/"),
                             TimeStamp = c.Begintime,
                             CallType = c.Calltype,
                             c.DNIS,
                             c.ANI,
                             TalkTime = c.Talktime
-                        }).AsEnumerable().Select(x => new 
+                        }).AsEnumerable().Select(x => new
                         {
                             FileName = x.FileName[(x.FileName.LastIndexOf('\\') + 1)..],
                             x.FileUrl,
@@ -53,16 +63,16 @@ namespace WisePBX.NET8.Controllers
             if (!data.Any()) return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchRecord });
             return Ok(new { result = WiseResult.Success, data });
         }
-        
+
         [HttpPost]
         [Route(template: "Call/GetVoiceMail")]
         public IActionResult GetVoiceMail([FromBody] JsonObject p)
         {
-            DateTime startDate = Convert.ToDateTime((p["startDate"]??"").ToString());
+            DateTime startDate = Convert.ToDateTime((p["startDate"] ?? "").ToString());
             DateTime endDate = Convert.ToDateTime((p["endDate"] ?? "").ToString()).AddDays(1);
-            
-            int agentId = Convert.ToInt32((p["agentId"]??"-1").ToString());
-            string phoneNo = (p["phoneNo"]??"").ToString();
+
+            int agentId = Convert.ToInt32((p["agentId"] ?? "-1").ToString());
+            string phoneNo = (p["phoneNo"] ?? "").ToString();
             string dnis = (p["dnis"] ?? "").ToString();
             string ani = (p["ani"] ?? "").ToString();
             int read = Convert.ToInt32((p["read"] ?? "-1").ToString());
@@ -90,7 +100,7 @@ namespace WisePBX.NET8.Controllers
                             m.DNIS,
                             StaffNo = m.AgentID,
                             FilePath = m.Filename,
-                            FileUrl = (m.Filename??"").Replace(hostDrive + @":\", webUrl+"/").Replace(@"\", @"/"),
+                            FileUrl = (m.Filename ?? "").Replace(hostDrive + @":\", webUrl + "/").Replace(@"\", @"/"),
                             TimeStamp = m.ArriveDateTime,
                             Duration = m.MediaDuration ?? o.VMDuration ?? 0,
                             m.IvrsData,
@@ -100,6 +110,29 @@ namespace WisePBX.NET8.Controllers
             return Ok(new { result = WiseResult.Success, data });
         }
         
+
+        private static Expression<Func<VW_FullVoiceLog, bool>> VoicelogFilter(dynamic d)
+        {
+            DateTime startDate = d.startDate;
+            DateTime endDate = d.endDate;
+            int serviceId = d.serviceId;
+            int callType = d.callType;
+            string phoneNo = d.phoneNo;
+            string[] agentId = d.agentId;
+            string ani = d.ani;
+            string dnis = d.dnis;
+            int[] callId = d.callId;
+            
+            return v => (v.Begintime >= startDate) && (v.Begintime < endDate)
+                         && (serviceId == -1 || v.ServiceID == serviceId || (v.ServiceID == 0 && v.CallType == 3))
+                         && (callType == -1 || v.CallType == callType)
+                         && (phoneNo == "" || (v.PhoneNo ?? "").Contains(phoneNo))
+                         && (agentId.Length == 0 || agentId.Any(a => (v.AgentList ?? "").Contains(a)))
+                         && (ani == "" || v.ANI == ani)
+                         && (dnis == "" || v.DNIS == dnis)
+                         && (callId.Length == 0 || callId.Contains(v.CallID));
+        }
+
         [HttpPost]
         [Route(template: "Call/GetVoiceLogEx")]
         public IActionResult GetVoiceLogEx([FromBody] JsonObject p)
@@ -110,67 +143,57 @@ namespace WisePBX.NET8.Controllers
                 DateTime endDate = (p["endDate"] == null) ? DateTime.Today.AddDays(1) : (Convert.ToDateTime(p["endDate"]?.ToString())).AddDays(1);
                 int serviceId = (p["serviceId"] == null) ? -1 : Convert.ToInt32((p["serviceId"]??"-1").ToString());
 
-                string[]? agentId = []; 
-                if (p["agentId"] != null)
-                {
-                    if (p!["agentId"]!.GetType().Name == "JsonArray")
-                        agentId = JsonConvert.DeserializeObject<string[]>(p!["agentId"]!.ToJsonString());
-                    else
-                        agentId = [p!["agentId"]!.ToString()];
-                    
-                }
+                string[]? agentId;
+                if (p!["agentId"]!?.GetType().Name == "JsonArray")
+                    agentId = JsonConvert.DeserializeObject<string[]>(p!["agentId"]!.ToJsonString());
+                else
+                    agentId = (p["agentId"]==null)? []: [p!["agentId"]!.ToString()];
+                
+                
                 agentId = (agentId??[]).Select(m => "|" + m + "|").ToArray();
 
                 string phoneNo = (p["phoneNo"] ?? "").ToString();
                 int callType = Convert.ToInt32((p["callType"] ?? "-1").ToString());
                 string ani = (p["ani"] ?? "").ToString();
                 string dnis = (p["dnis"] ?? "").ToString();
-                int[]? callId = [];
+                int[]? callId =[];
                 if (p["callId"] != null)
                 {
                     if (p["callId"]?.GetType().Name == "JsonArray")
-                        callId = JsonConvert.DeserializeObject<int[]>(p!["callId"]!.ToJsonString()) ??[];
+                        callId = JsonConvert.DeserializeObject<int[]>(p!["callId"]!.ToJsonString());
                     else
                         callId = [p!["callId"]!.GetValue<int>()];
                 }
-                if (phoneNo != "" && phoneNo.Length < 8) return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters });
-
+                
                 string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
+                var data = _wisedb.VW_FullVoiceLogs.Where(VoicelogFilter(
+                    new
+                    {
+                        startDate,
+                        endDate,
+                        serviceId,
+                        callType,
+                        phoneNo,
+                        agentId,
+                        callId,
+                        ani,
+                        dnis
+                    })).Select(v=>new
+                    {
+                        CallId = v.CallID,
+                        ServiceName = v.ServiceDesc,
+                        TimeStamp = v.Begintime,
+                        CallType = v.CallTypeEx,
+                        v.PhoneNo,
+                        Duration = v.Talktime,
+                        StaffNo = (v.AgentList ?? "").Replace("|", ""),
+                        FilePaths = v.Filepath??"",
+                        VoiceFiles = new List<dynamic>()
+                    }).ToList();
 
-                var r = (from v in _wisedb.VW_FullVoiceLogs
-                         join s in _wisedb.Services on v.ServiceID equals s.ServiceID
-                         into ps
-                         from o in ps.DefaultIfEmpty()
-                         where (v.CallType >= 1 && v.CallType <= 5)
-                         && (v.Begintime >= startDate) && (v.Begintime < endDate)
-                         && (serviceId == -1 || v.ServiceID == serviceId || (v.ServiceID == 0 && v.CallType == 3))
-                         && (callType == -1 || v.CallType == callType)
-                         && (phoneNo == "" || (v.PhoneNo??"").Contains(phoneNo))
-                         && (agentId.Length==0 || agentId.Any(a => (v.AgentList??"").Contains(a)))
-                         && (ani == "" || v.ANI == ani)
-                         && (dnis == "" || v.DNIS == dnis)
-                         && (callId.Length == 0 || callId.Contains(v.CallID))
-                         orderby v.Begintime descending
-
-                         select new
-                         {
-                             CallId = v.CallID,
-                             ServiceName = o.ServiceDesc,
-                             TimeStamp = v.Begintime,
-                             CallType = v.CallTypeEx,
-                             v.PhoneNo,
-                             Duration = v.Talktime,
-                             StaffNo = (v.AgentList ?? "").Replace("|", ""),
-                             FilePaths = v.Filepath,
-                             VoiceFiles = new List<dynamic>()
-                         });
-                
-                    
-                var data = r.Take(1000).ToList();
-                
                 data.ForEach(x => {
                     Array.ForEach(x.FilePaths.Split(','), ar => {
-                        var _voiceFile = new 
+                        var _voiceFile = new
                         {
                             FilePath = ar,
                             FileUrl = ar.Replace(@"\", @"/").Replace("//" + hostName + "/", webUrl + "/"),
@@ -179,7 +202,9 @@ namespace WisePBX.NET8.Controllers
                         x.VoiceFiles.Add(_voiceFile);
                     });
                 });
-                
+
+
+
                 if (data.Count == 0) return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchRecord });
                 return Ok(new { result = WiseResult.Success, data });
             }

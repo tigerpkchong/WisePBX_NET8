@@ -374,7 +374,7 @@ public partial class WiseEntities : DbContext
             entity
                 .HasNoKey()
                 .ToView("VW_FullVoiceLog");
-
+            entity.Property(e => e.ServiceDesc).HasMaxLength(100);
             entity.Property(e => e.ANI).HasMaxLength(64);
             entity.Property(e => e.AgentList)
                 .HasMaxLength(1000)

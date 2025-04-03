@@ -7,8 +7,10 @@ public partial class VW_FullVoiceLog
 {
     public int CallID { get; set; }
 
-    public DateTime Begintime { get; set; }
+    public string? ServiceDesc { get; set; }
 
+    public DateTime Begintime { get; set; }
+    
     public string? Filepath { get; set; }
 
     public string? AgentList { get; set; }
