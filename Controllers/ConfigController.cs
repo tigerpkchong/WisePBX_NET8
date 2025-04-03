@@ -322,7 +322,69 @@ namespace WisePBX.NET8.Controllers
                 return Ok(new { result = WiseResult.Fail, data = e.Message, function = WiseFunc.Config.DelACDGroupAccess });
             }
         }
-        
+
+        [HttpPost]
+        [Route(template: "Config/GetMonitorStatistics")]
+        public IActionResult GetMonitorStatistics([FromBody] JsonObject p)
+        {
+            try
+            {
+                int serviceId = Convert.ToInt32((p["serviceId"] ?? "-1").ToString());
+                int groupId = Convert.ToInt32((p["groupId"] ?? "-1").ToString());
+
+                string? _grpType = (from a in _wisedb.Service_ACDGroups
+                                    where a.ServiceID == serviceId &&
+                                    a.ACDGroupID == groupId
+                                    select a.ACDGroupType).SingleOrDefault();
+
+                var service = (from s in _wisedb.Monitor_Statistics
+                               where s.ServiceID == serviceId && s.ACDGroupType == _grpType
+                               group s by s.ServiceID into g
+                               select new
+                               {
+                                   TimeStamp = g.Min(x => x.TimeStamp),
+                                   IncomingCall = g.Sum(x => x.IncomingCall),
+                                   AnsweredCall = g.Sum(x => x.AnsweredCall),
+                                   AbandonedCall = g.Sum(x => x.AbandonedCall),
+                                   OutboundCall = g.Sum(x => x.OutboundCall),
+                                   PctAnsweredCall = (g.Sum(x => x.IncomingCall) == 0) ? 0 :
+                                        (int)Math.Round((double)g.Sum(x => x.AnsweredCall ?? 0) / (double)g.Sum(x => x.IncomingCall ?? 0) * 100),
+                                   PctAbandonedCall = (g.Sum(x => x.IncomingCall) == 0) ? 0 :
+                                        (int)Math.Round((double)g.Sum(x => x.AbandonedCall ?? 0) / (double)g.Sum(x => x.IncomingCall ?? 0) * 100),
+                                   AvgAbandonedTime = (g.Sum(x => x.AbandonedCall) == 0) ? 0 :
+                                        (int)Math.Round((double)g.Sum(x => x.AbandonedTime ?? 0) / (double)g.Sum(x => x.AbandonedCall ?? 0)),
+                                   AvgTalkTime = (g.Sum(x => x.AnsweredCall) + g.Sum(x => x.OutboundCall) == 0) ? 0 :
+                                        (int)Math.Round((double)(g.Sum(x => x.AnsweredTalkTime ?? 0) + g.Sum(x => x.OutboundTalkTime ?? 0)) / (double)(g.Sum(x => x.AnsweredCall ?? 0) + g.Sum(x => x.OutboundCall ?? 0))),
+                                   AvgAnsweredTime = (g.Sum(x => x.AnsweredCall) == 0) ? 0 :
+                                        (int)Math.Round((double)g.Sum(x => x.AnsweredWaitTime ?? 0) / (double)g.Sum(x => x.AnsweredCall ?? 0)),
+                               }).SingleOrDefault();
+                var acdGroup = (from s in _wisedb.Monitor_Statistics
+                                where s.ServiceID == serviceId && s.ACDGroupID == groupId &&
+                                s.ACDGroupType == _grpType
+                                select new
+                                {
+                                    s.IncomingCall,
+                                    s.AnsweredCall,
+                                    s.AbandonedCall,
+                                    PctAnsweredCall = (s.IncomingCall == 0) ? 0 :
+                                        (int)Math.Round((double)(s.AnsweredCall ?? 0 / (double)(s.IncomingCall ?? 0)) * 100),
+                                    PctAbandonedCall = (s.IncomingCall == 0) ? 0 :
+                                        (int)Math.Round((double)(s.AbandonedCall ?? 0 / (double)(s.IncomingCall ?? 0)) * 100),
+                                    AvgAbandonedTime = (s.AbandonedCall == 0) ? 0 :
+                                        (int)Math.Round((double)(s.AbandonedTime ?? 0) / (double)(s.AbandonedCall ?? 0)),
+                                    AvgTalkTime = (s.AnsweredCall == 0) ? 0 :
+                                        (int)Math.Round((double)(s.AnsweredTalkTime ?? 0) / (double)(s.AnsweredCall ?? 0)),
+                                    AvgAnsweredTime = (s.AnsweredCall == 0) ? 0 :
+                                        (int)Math.Round((double)(s.AnsweredWaitTime ?? 0) / (double)(s.AnsweredCall ?? 0)),
+                                }).SingleOrDefault();
+                return Ok(new { result = WiseResult.Success, data = new { service, acdGroup/*, TimeTicks = DateTime.MaxValue.Ticks */} });
+            }
+            catch (Exception e)
+            {
+                return Ok(new { result = WiseResult.Fail, data = e.Message, function = WiseFunc.Config.GetMonitorStatistics });
+            }
+        }
+
     }
 }
 

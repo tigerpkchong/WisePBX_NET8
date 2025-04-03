@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Controllers\ConfigMonitorController.cs" />
     <Compile Remove="Controllers\WeatherForecastController.cs" />
     <Compile Remove="Models\Wise\AcdgroupAccess.cs" />
     <Compile Remove="Models\Wise\EmailSettingLog.cs" />

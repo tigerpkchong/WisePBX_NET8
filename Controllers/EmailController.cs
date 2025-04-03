@@ -18,8 +18,6 @@ using System.Xml;
 using WisePBX.NET8.Models.Wise;
 using Newtonsoft.Json;
 using Microsoft.EntityFrameworkCore;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using MailKit;
 
 namespace WisePBX.NET8.Controllers
 {
