@@ -9,19 +9,10 @@ namespace WisePBX.NET8.Controllers
 {
     [Route(template: "api")]
     [ApiController]
-    public class OutboundController : ControllerBase
+    public class OutboundController(WiseEntities entities) : ControllerBase
     {
-        private readonly string fileUploadPath;
-        private readonly WiseEntities _wisedb;
+        private readonly WiseEntities _wisedb = entities;
 
-        public OutboundController(IConfiguration iConfig,IWebHostEnvironment ienvironment
-            , WiseEntities entities)
-        {
-            fileUploadPath = iConfig.GetValue<string>("FileUploadPath") ?? "";
-            if(fileUploadPath=="")
-                fileUploadPath = ienvironment.ContentRootPath + "/Uploads";
-            _wisedb = entities;
-        }
         [HttpPost]
         [Route(template: "Outbound/GetCallId")]
         public IActionResult GetCallId([FromBody] JsonObject p)
