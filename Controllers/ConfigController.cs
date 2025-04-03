@@ -367,9 +367,9 @@ namespace WisePBX.NET8.Controllers
                                     s.AnsweredCall,
                                     s.AbandonedCall,
                                     PctAnsweredCall = (s.IncomingCall == 0) ? 0 :
-                                        (int)Math.Round((double)(s.AnsweredCall ?? 0 / (double)(s.IncomingCall ?? 0)) * 100),
+                                        (int)Math.Round((double)(s.AnsweredCall ?? 0) / (double)(s.IncomingCall ?? 0) * 100),
                                     PctAbandonedCall = (s.IncomingCall == 0) ? 0 :
-                                        (int)Math.Round((double)(s.AbandonedCall ?? 0 / (double)(s.IncomingCall ?? 0)) * 100),
+                                        (int)Math.Round((double)(s.AbandonedCall ?? 0) / (double)(s.IncomingCall ?? 0) * 100),
                                     AvgAbandonedTime = (s.AbandonedCall == 0) ? 0 :
                                         (int)Math.Round((double)(s.AbandonedTime ?? 0) / (double)(s.AbandonedCall ?? 0)),
                                     AvgTalkTime = (s.AnsweredCall == 0) ? 0 :
