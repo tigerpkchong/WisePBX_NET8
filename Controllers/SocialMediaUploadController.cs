@@ -41,6 +41,7 @@ namespace WisePBX.NET8.Controllers
                 {
                     Directory.CreateDirectory(_fullfileFolder);
                 }
+                //Tiger 2025-04-16
                 string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
 
                 var data = new List<dynamic>();
