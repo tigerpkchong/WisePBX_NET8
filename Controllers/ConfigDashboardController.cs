@@ -6,7 +6,7 @@ using WisePBX.NET8.Models.Wise_SP;
 
 namespace WisePBX.NET8.Controllers
 {
-    [Route("api/[controller]")]
+    [Route(template: "api")]
     [ApiController]
     public class ConfigDashboardController(WiseSPEntities _wiseSPdb) : ControllerBase
     {

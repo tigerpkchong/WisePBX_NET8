@@ -143,12 +143,11 @@ namespace WisePBX.NET8.Controllers
                 DateTime endDate = (p["endDate"] == null) ? DateTime.Today.AddDays(1) : (Convert.ToDateTime(p["endDate"]?.ToString())).AddDays(1);
                 int serviceId = (p["serviceId"] == null) ? -1 : Convert.ToInt32((p["serviceId"]??"-1").ToString());
 
-                string[]? agentId;
+                string[]? agentId=[];
                 if (p![WiseParam.AgentId]!?.GetType().Name == "JsonArray")
                     agentId = JsonConvert.DeserializeObject<string[]>(p![WiseParam.AgentId]!.ToJsonString());
-                else
-                    agentId = (p[WiseParam.AgentId]==null)? []: [p![WiseParam.AgentId]!.ToString()];
-                
+                else if (p[WiseParam.AgentId]?.GetType().Name == "JsonValueOfElement")
+                    agentId = [p![WiseParam.AgentId]!.ToString()];
                 
                 agentId = (agentId??[]).Select(m => "|" + m + "|").ToArray();
 
@@ -156,14 +155,12 @@ namespace WisePBX.NET8.Controllers
                 int callType = Convert.ToInt32((p["callType"] ?? "-1").ToString());
                 string ani = (p["ani"] ?? "").ToString();
                 string dnis = (p["dnis"] ?? "").ToString();
-                int[]? callId =[];
-                if (p[WiseParam.CallId] != null)
-                {
-                    if (p[WiseParam.CallId]?.GetType().Name == "JsonArray")
-                        callId = JsonConvert.DeserializeObject<int[]>(p![WiseParam.CallId]!.ToJsonString());
-                    else
-                        callId = [p![WiseParam.CallId]!.GetValue<int>()];
-                }
+                int[]? callId=[];
+                
+                if (p[WiseParam.CallId]?.GetType().Name == "JsonArray")
+                    callId = JsonConvert.DeserializeObject<int[]>(p![WiseParam.CallId]!.ToJsonString());
+                else if (p[WiseParam.CallId]?.GetType().Name == "JsonValueOfElement")
+                    callId = [p![WiseParam.CallId]!.GetValue<int>()];
                 
                 string webUrl = $"{Request.Scheme}://{Request.Host.Value.TrimEnd(':')}{Request.PathBase}";
                 var data = _wisedb.VW_FullVoiceLogs.Where(VoicelogFilter(
@@ -190,22 +187,23 @@ namespace WisePBX.NET8.Controllers
                         FilePaths = v.Filepath??"",
                         VoiceFiles = new List<dynamic>()
                     }).ToList();
+                if (data.Count == 0) return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchRecord });
 
                 data.ForEach(x => {
                     Array.ForEach(x.FilePaths.Split(','), ar => {
-                        var _voiceFile = new
-                        {
-                            FilePath = ar,
-                            FileUrl = ar.Replace(@"\", @"/").Replace("//" + hostName + "/", webUrl + "/"),
-                            FileName = ar[(ar.LastIndexOf('\\') + 1)..],
-                        };
-                        x.VoiceFiles.Add(_voiceFile);
+                        if (System.IO.File.Exists(ar)) {
+                            var _voiceFile = new
+                            {
+                                FilePath = ar,
+                                FileUrl = ar.Replace(@"\", @"/").Replace("//" + hostName + "/", webUrl + "/"),
+                                FileName = ar[(ar.LastIndexOf('\\') + 1)..],
+                            };
+                            x.VoiceFiles.Add(_voiceFile);
+                        }
+                        
                     });
                 });
-
-
-
-                if (data.Count == 0) return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchRecord });
+                
                 return Ok(new { result = WiseResult.Success, data });
             }
             catch (Exception e)
