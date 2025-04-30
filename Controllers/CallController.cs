@@ -145,7 +145,7 @@ namespace WisePBX.NET8.Controllers
 
                 string[]? agentId=[];
                 if (p![WiseParam.AgentId]!?.GetType().Name == "JsonArray")
-                    agentId = JsonConvert.DeserializeObject<string[]>(p![WiseParam.AgentId]!.ToJsonString());
+                    agentId = p[WiseParam.AgentId].Deserialize<string[]>();
                 else if (p[WiseParam.AgentId]?.GetType().Name == "JsonValueOfElement")
                     agentId = [p![WiseParam.AgentId]!.ToString()];
                 
@@ -158,7 +158,7 @@ namespace WisePBX.NET8.Controllers
                 int[]? callId=[];
                 
                 if (p[WiseParam.CallId]?.GetType().Name == "JsonArray")
-                    callId = JsonConvert.DeserializeObject<int[]>(p![WiseParam.CallId]!.ToJsonString());
+                    callId = p[WiseParam.CallId].Deserialize<int[]>();
                 else if (p[WiseParam.CallId]?.GetType().Name == "JsonValueOfElement")
                     callId = [p![WiseParam.CallId]!.GetValue<int>()];
                 
