@@ -18,6 +18,7 @@ using System.Xml;
 using WisePBX.NET8.Models.Wise;
 using Newtonsoft.Json;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace WisePBX.NET8.Controllers
 {
@@ -188,7 +189,7 @@ namespace WisePBX.NET8.Controllers
         [Route(template: "Email/AssignAgent")]
         public IActionResult AssignAgent([FromBody] JsonObject p)
         {
-            List<int>? mediaIds = JsonConvert.DeserializeObject<List<int>>(p!["mediaIds"]!.ToJsonString());
+            List<int>? mediaIds = p["mediaIds"]?.Deserialize<List<int>>();
             int assignTo = Convert.ToInt32((p["assignTo"]??"0").ToString());
             int updatedBy = Convert.ToInt32((p["updatedBy"] ?? "0").ToString());
             if (mediaIds == null || assignTo <= 0 || updatedBy <= 0)

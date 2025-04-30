@@ -5,6 +5,7 @@ using System.Text.Json.Nodes;
 using System.Linq;
 using WisePBX.NET8.Models.Wise_SP;
 using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace WisePBX.NET8.Controllers
 {
@@ -100,7 +101,7 @@ namespace WisePBX.NET8.Controllers
                 if (p == null || p[WiseParam.AgentIds] == null) 
                     return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = WiseFunc.Config.GetSupervisorList});
                 
-                List<int>? agentIds = JsonConvert.DeserializeObject<List<int>>(p![WiseParam.AgentIds]!.ToJsonString()) ?? [];
+                List<int>? agentIds =p[WiseParam.AgentIds].Deserialize<List<int>>() ?? [];
                 
                 var data = (from i in _wisedb.AgentInfos
                             where agentIds.Contains(i.AgentID)
@@ -211,7 +212,7 @@ namespace WisePBX.NET8.Controllers
                 bool isAgent = (from a in _wisedb.AgentInfos where a.AgentID == agentId select a).Any();
                 if (!isAgent) return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchAgent, function = WiseFunc.Config.UpdateACDGroupAccessList });
 
-                List<AcdGroupAccessClass>? setting = JsonConvert.DeserializeObject<List<AcdGroupAccessClass>>(p!["setting"]!.ToJsonString());
+                List<AcdGroupAccessClass>? setting = p["setting"]?.Deserialize<List<AcdGroupAccessClass>>();
 
                 foreach (AcdGroupAccessClass i in setting ?? [])
                 {
