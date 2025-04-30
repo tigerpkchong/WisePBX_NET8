@@ -141,7 +141,7 @@ namespace WisePBX.NET8.Controllers
             {
                 DateTime startDate = (p["startDate"] == null) ? DateTime.Today : Convert.ToDateTime(p["startDate"]?.ToString());
                 DateTime endDate = (p["endDate"] == null) ? DateTime.Today.AddDays(1) : (Convert.ToDateTime(p["endDate"]?.ToString())).AddDays(1);
-                int serviceId = (p["serviceId"] == null) ? -1 : Convert.ToInt32((p["serviceId"]??"-1").ToString());
+                int serviceId = Convert.ToInt32((p["serviceId"]??"-1").ToString());
 
                 string[]? agentId=[];
                 if (p![WiseParam.AgentId]!?.GetType().Name == "JsonArray")
