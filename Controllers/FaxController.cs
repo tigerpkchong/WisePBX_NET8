@@ -49,7 +49,7 @@ namespace WisePBX.NET8.Controllers
         [Route(template: "Fax/AssignAgent")]
         public IActionResult AssignAgent([FromBody] JsonObject p)
         {
-            List<int>? mediaIds = p["mediaIds"]?.Deserialize<List<int>>();
+            List<int>? mediaIds = (p["mediaIds"]?.Deserialize<List<string>>())?.Select(int.Parse).ToList();
             int assignTo = Convert.ToInt32((p["assignTo"] ?? "-1").ToString());
             int updatedBy = Convert.ToInt32((p["updatedBy"] ?? "-1").ToString());
             if (mediaIds == null || assignTo == -1 || updatedBy == -1)

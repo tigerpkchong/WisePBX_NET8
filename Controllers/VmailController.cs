@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using WisePBX.NET8.Models.Wise;
 
@@ -117,7 +118,7 @@ namespace WisePBX.NET8.Controllers
         public IActionResult AssignAgent([FromBody] JsonObject p)
         {
 
-            List<int>? mediaIds = p["mediaIds"]?.GetValue<List<int>>();
+            List<int>? mediaIds = (p["mediaIds"]?.Deserialize<List<string>>())?.Select(int.Parse).ToList();
             int assignTo = Convert.ToInt32((p["assignTo"]??"-1").ToString());
             int updatedBy = Convert.ToInt32((p["updatedBy"] ?? "-1").ToString());
             if (mediaIds == null || assignTo == -1 || updatedBy == -1)

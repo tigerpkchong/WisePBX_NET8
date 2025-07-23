@@ -48,15 +48,20 @@ namespace WisePBX.NET8.Controllers
         [Route(template: "Email/GetList")]
         public IActionResult GetList([FromBody] JsonObject p)
         {
-            string dnis = (p["dnis"]??"").ToString();
+            string[]? dnis = null;
+            if (p["dnis"]?.GetType().Name == "JsonArray")
+                dnis = p["dnis"].Deserialize<string[]>();
+            else if (p["dnis"] != null)
+                dnis = [p!["dnis"]!.ToString()];
+
             int agentId = Convert.ToInt32((p[WiseParam.AgentId] ?? "-1").ToString());
             int handled = Convert.ToInt32((p["handled"] ?? "0").ToString());
 
-            if (dnis == "" || agentId <= 0) 
+            if (dnis == null || agentId <= 0) 
                 return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = WiseFunc.Email.GetList });
 
             var _mediaList = (from m in _wisedb.MediaCalls
-                              where m.AgentID == agentId && m.DNIS == dnis && m.IsHandleFinish == handled
+                              where m.AgentID == agentId && dnis.Contains(m.DNIS) && m.IsHandleFinish == handled
                               && m.CallType == 6
                               select m).Take(1000).ToList();
 
@@ -189,7 +194,7 @@ namespace WisePBX.NET8.Controllers
         [Route(template: "Email/AssignAgent")]
         public IActionResult AssignAgent([FromBody] JsonObject p)
         {
-            List<int>? mediaIds = p["mediaIds"]?.Deserialize<List<int>>();
+            List<int>? mediaIds = (p["mediaIds"]?.Deserialize<List<string>>())?.Select(int.Parse).ToList();
             int assignTo = Convert.ToInt32((p["assignTo"]??"0").ToString());
             int updatedBy = Convert.ToInt32((p["updatedBy"] ?? "0").ToString());
             if (mediaIds == null || assignTo <= 0 || updatedBy <= 0)
