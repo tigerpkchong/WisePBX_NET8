@@ -112,7 +112,10 @@ namespace WisePBX.NET8.Controllers
                 {
                     mimePart.FileName,
                     Base64Data = Convert.ToBase64String(buffer, 0, (int)memoryStream.Length),
-                    ContentType = mimePart.ContentType.MimeType
+                    mimePart.ContentId,
+                    ContentType = mimePart.ContentType.MimeType,
+                    ContentPart = true
+                    
                 };
                 return attachment;
             }
@@ -125,7 +128,9 @@ namespace WisePBX.NET8.Controllers
                 {
                     FileName = msgPart.Message.Subject,
                     Base64Data = Convert.ToBase64String(buffer, 0, (int)memoryStream.Length),
-                    ContentType = msgPart.ContentType.MimeType
+                    msgPart.ContentId,
+                    ContentType = msgPart.ContentType.MimeType,
+                    ContentPart = false
                 };
                 return attachment;
             }
