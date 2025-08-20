@@ -82,4 +82,6 @@ public partial class MediaCall
     public byte? CopyToTempFolder { get; set; }
 
     public int? MediaDuration { get; set; }
+
+    public bool? UploadFlag { get; set; }
 }

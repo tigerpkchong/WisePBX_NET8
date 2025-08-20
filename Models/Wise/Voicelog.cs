@@ -35,5 +35,5 @@ public partial class Voicelog
 
     public string? AgentName { get; set; }
 
-    public string? Content { get; set; }
+    public bool? UploadFlag { get; set; }
 }

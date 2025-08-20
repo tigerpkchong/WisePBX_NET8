@@ -49,23 +49,32 @@ namespace WisePBX.NET8.Controllers
             int handled = Convert.ToInt32((p["handled"] ?? "0").ToString());
             
             var _mediaList = (from m in _wisedb.MediaCalls
+                              join a in _wisedb.ASRivrs on m.CallID equals a.callID
+                              into ma from a in ma.DefaultIfEmpty()
                               where (agentId == -1 || m.AgentID == agentId) && m.CallType == 7 &&
                               dnis.Contains((m.DNIS??"")) &&
                               m.IsHandleFinish == handled
                               //&& (read==-1 || m.ReadFlag ==read)
                               //&& (ani == "" || m.ANI == ani)
                               orderby m.CreateDateTime descending
-                              select m).ToList();
+                              select new { 
+                                  m.CreateDateTime,
+                                  m.CallID,
+                                  m.ANI,
+                                  m.Subject,
+                                  m.Filename,
+                                  ASRContent = a.result ?? ""
+                              }).ToList();
 
 
             List<dynamic> data = [];
-            foreach (MediaCall _mediaCall in _mediaList)
+            foreach (var _mediaCall in _mediaList)
             {
-                string file = _mediaCall.Filename ?? "";
-                if (file.StartsWith(hostDrive + @":\"))
-                    file = file.Replace(hostDrive + @":\", @"http://" + hostAddress + @"/wisepbx/").Replace(@"\", @"/");
+                string FilePath = _mediaCall.Filename ?? "";
+                if (FilePath.StartsWith(hostDrive + @":\"))
+                    FilePath = FilePath.Replace(hostDrive + @":\", @"http://" + hostAddress + @"/wisepbx/").Replace(@"\", @"/");
                 else
-                    file = file.Replace(@"\" + hostName + @"\", @"\" + hostAddress + @"\");
+                    FilePath = FilePath.Replace(@"\" + hostName + @"\", @"\" + hostAddress + @"\");
 
                 data.Add(new 
                 {
@@ -73,7 +82,8 @@ namespace WisePBX.NET8.Controllers
                     VmailID = _mediaCall.CallID,
                     CallerDisplay = _mediaCall.ANI,
                     _mediaCall.Subject,
-                    FilePath = file
+                    FilePath,
+                    _mediaCall.ASRContent
                 });
             }
 
@@ -138,8 +148,9 @@ namespace WisePBX.NET8.Controllers
 
             var _vmail = (from m in _wisedb.MediaCalls
                           join v in _wisedb.Voicemails on m.PrevCallID equals v.CallID
-                          into ps
-                          from o in ps.DefaultIfEmpty()
+                          into mv from v in mv.DefaultIfEmpty()
+                          join a in _wisedb.ASRivrs on m.CallID equals a.callID
+                          into ma from a in ma.DefaultIfEmpty()
                           where m.CallID == id && m.CallType == 7
                           select new
                           {
@@ -153,8 +164,9 @@ namespace WisePBX.NET8.Controllers
                               m.Filename,
                               FileUrl = (m.Filename??"").Replace(hostDrive + @":\", webUrl + "/").Replace(@"\", @"/"),
                               TimeStamp = m.ArriveDateTime,
-                              Duration = m.MediaDuration ?? o.VMDuration ?? 0,
+                              Duration = m.MediaDuration ?? v.VMDuration ?? 0,
                               m.ReadFlag,
+                              ASRContent = a.result ?? ""
                           }).SingleOrDefault();
             if (_vmail == null) 
                 return Ok(new { result = WiseResult.Fail, details = WiseError.NoSuchRecord, function = WiseFunc.Vmail.GetContent });

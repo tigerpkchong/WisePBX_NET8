@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using WisePBX.NET8.Models.Wise_SP;
-
 namespace WisePBX.NET8.Models.Wise;
 
 public partial class WiseEntities : DbContext
@@ -11,11 +10,14 @@ public partial class WiseEntities : DbContext
         : base(options)
     {
     }
+
     public virtual DbSet<ACDGroup> ACDGroups { get; set; }
 
     public virtual DbSet<ACDGroupMember> ACDGroupMembers { get; set; }
 
     public virtual DbSet<ACDGroup_Access> ACDGroup_Accesses { get; set; }
+
+    public virtual DbSet<ASRivr> ASRivrs { get; set; }
 
     public virtual DbSet<AgentInfo> AgentInfos { get; set; }
 
@@ -77,6 +79,16 @@ public partial class WiseEntities : DbContext
             entity.HasKey(e => new { e.AgentID, e.AcdGroupID });
 
             entity.ToTable("ACDGroup_Access");
+        });
+
+        modelBuilder.Entity<ASRivr>(entity =>
+        {
+            entity.HasNoKey();
+
+            entity.HasIndex(e => new { e.callID, e.timestamp }, "callID");
+
+            entity.Property(e => e.result).HasColumnType("ntext");
+            entity.Property(e => e.timestamp).HasColumnType("datetime");
         });
 
         modelBuilder.Entity<AgentInfo>(entity =>
@@ -248,6 +260,7 @@ public partial class WiseEntities : DbContext
             entity.Property(e => e.Subject)
                 .HasMaxLength(1024)
                 .HasDefaultValue("");
+            entity.Property(e => e.UploadFlag).HasDefaultValue(false);
             entity.Property(e => e.ZipFileFolder).HasMaxLength(255);
             entity.Property(e => e.ZipPassword).HasMaxLength(255);
         });
@@ -359,7 +372,7 @@ public partial class WiseEntities : DbContext
             entity
                 .HasNoKey()
                 .ToView("VW_FullVoiceLog");
-            entity.Property(e => e.ServiceDesc).HasMaxLength(100);
+
             entity.Property(e => e.ANI).HasMaxLength(64);
             entity.Property(e => e.AgentList)
                 .HasMaxLength(1000)
@@ -369,6 +382,7 @@ public partial class WiseEntities : DbContext
                 .HasMaxLength(10)
                 .IsUnicode(false);
             entity.Property(e => e.DNIS).HasMaxLength(64);
+            entity.Property(e => e.ServiceDesc).HasMaxLength(50);
         });
 
         modelBuilder.Entity<Voicelog>(entity =>
@@ -384,11 +398,11 @@ public partial class WiseEntities : DbContext
             entity.Property(e => e.AgentName).HasMaxLength(64);
             entity.Property(e => e.BackupDate).HasColumnType("datetime");
             entity.Property(e => e.BackupLabel).HasMaxLength(64);
-            entity.Property(e => e.Content).HasDefaultValueSql("(NULL)");
             entity.Property(e => e.FileSize).HasDefaultValue(0);
             entity.Property(e => e.Filepath).HasMaxLength(255);
             entity.Property(e => e.RestoreKey).HasMaxLength(255);
             entity.Property(e => e.Time_stamp).HasColumnType("datetime");
+            entity.Property(e => e.UploadFlag).HasDefaultValue(false);
             entity.Property(e => e.ZipFileFolder).HasMaxLength(255);
             entity.Property(e => e.ZipPassword).HasMaxLength(255);
         });

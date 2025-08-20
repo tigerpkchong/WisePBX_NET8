@@ -77,6 +77,7 @@ namespace WisePBX.NET8.Controllers
                     CreateDateTime = _medialCall.ArriveDateTime,
                     EmailID = _medialCall.CallID,
                     message.From[0].Name,
+                    _medialCall.DNIS,
                     Sender = message.From.Mailboxes.Single().Address,
                     Subject = message.Subject ?? "",
                     Content = _content
