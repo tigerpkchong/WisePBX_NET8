@@ -51,21 +51,6 @@ public partial class WiseEntities : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<SP_Dashboard_Data_Agent_Result>(entity =>
-        {
-            entity.HasKey(e => e.agent_id);
-        });
-
-        modelBuilder.Entity<SP_Dashboard_Data_Result>(entity =>
-        {
-            entity.HasKey(e => e.time_stamp);
-        });
-        
-        modelBuilder.Entity<SP_wallboard_count_Result>(entity =>
-        {
-            entity.HasNoKey();
-        });
-
         modelBuilder.Entity<ACDGroup>(entity =>
         {
             entity.HasKey(e => e.AcdGroupID).IsClustered(false);
