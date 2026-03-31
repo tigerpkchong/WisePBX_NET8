@@ -191,7 +191,7 @@ namespace WisePBX.NET8.Controllers
 
                 data.ForEach(x => {
                     Array.ForEach(x.FilePaths.Split(','), ar => {
-                        if (System.IO.File.Exists(ar)) {
+                        //if (System.IO.File.Exists(ar)) {
                             var _voiceFile = new
                             {
                                 FilePath = ar,
@@ -199,7 +199,7 @@ namespace WisePBX.NET8.Controllers
                                 FileName = ar[(ar.LastIndexOf('\\') + 1)..],
                             };
                             x.VoiceFiles.Add(_voiceFile);
-                        }
+                        //}
                         
                     });
                 });

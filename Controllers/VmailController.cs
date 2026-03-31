@@ -44,7 +44,7 @@ namespace WisePBX.NET8.Controllers
             if (p["dnis"] == null) 
                 return Ok(new { result = WiseResult.Fail, details = WiseError.InvalidParameters, function = WiseFunc.Vmail.GetList });
 
-            string dnis = (p["dnis"] ?? "").ToString();
+            string[] dnis = (p["dnis"] ?? "").ToString().Split(",");
             int agentId = Convert.ToInt32((p["agentId"] ?? "-1").ToString());
             int handled = Convert.ToInt32((p["handled"] ?? "0").ToString());
             

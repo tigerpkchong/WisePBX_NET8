@@ -43,16 +43,13 @@ namespace WisePBX.NET8.Controllers
                 fileUploadPath = ienvironment.ContentRootPath + "/Uploads";
             _wisedb = wiseEntities;
         }
-
+        
         [HttpPost]
         [Route(template: "Email/GetList")]
         public IActionResult GetList([FromBody] JsonObject p)
         {
-            string[]? dnis = null;
-            if (p["dnis"]?.GetType().Name == "JsonArray")
-                dnis = p["dnis"].Deserialize<string[]>();
-            else if (p["dnis"] != null)
-                dnis = [p!["dnis"]!.ToString()];
+            string[]? dnis = p["dnis"]?.ToString().Split(",");
+            
 
             int agentId = Convert.ToInt32((p[WiseParam.AgentId] ?? "-1").ToString());
             int handled = Convert.ToInt32((p["handled"] ?? "0").ToString());
